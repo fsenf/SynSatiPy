@@ -3,6 +3,22 @@ import numpy as np
 
 
 def test_synsat_on_test_profile(accuracy=1.0):
+    """
+    Runs the SynSatTest on predefined profiles.
+
+    Parameters
+    ----------
+    accuracy :
+         (Default value = 1.0)
+
+    Returns
+    -------
+
+
+    Notes
+    -----
+    The test will fail when profiles are changed because expected result is hardcoded.
+    """
 
     s = SynSatTest()
     s.run_workflow()

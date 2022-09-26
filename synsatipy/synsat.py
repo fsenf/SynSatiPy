@@ -342,4 +342,15 @@ class SynSat( SynSatBase ):
             synsat[chan_name].attrs = a
 
 
+        attr.output = synsat
+
         return synsat
+
+    def save( self, output_filename ):
+
+        out = self.extract_output()
+        
+        print(f"... [synsat] write synsat data to {output_filename}")
+        out.to_netcdf( output_filename )
+
+        return

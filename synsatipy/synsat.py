@@ -127,6 +127,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         seviri_var_names = ['rho006', 'rho008', 'rho016', 'bt039', 
                             'bt062', 'bt073', 'bt087', 'bt097', 'bt108', 'bt120', 'bt134', 'rhohrv']
 
+        seviri_var_units = 3*['-',] + 8*['K',] + ['-']
+
 
         # MSG options
         # ===========
@@ -140,9 +142,13 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         attr = self.synsat
 
         chan_index = np.array( chan_list_seviri ) - 1
-        attr.channels = np.array(seviri_var_names)[ chan_index  ]
+        
+        attr.channels = np.array(seviri_var_names)[ chan_index ]
+        attr.units    = np.array(seviri_var_units)[ chan_index ]
         nchan_seviri = len(chan_list_seviri)
 
+        # check if solar channel are included
+        attr.solar_calculations = np.any( np.array( chan_list_seviri ) < 5 )
 
         # Set the options for each Rttov instance:
         # - the path to the coefficient file must always be specified
@@ -213,16 +219,17 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             synsat_month, ang_corr=True
         )  # Include angular correction, but do not initialise for single-instrument
 
-        brdfAtlas = pyrttov.Atlas()
-        brdfAtlas.AtlasPath = "{}/{}".format(attr.rttov_install_dir, "brdf_data")
-        brdfAtlas.loadBrdfAtlas(
-            synsat_month, self
-        )  # Supply Rttov object to enable single-instrument initialisation
-        brdfAtlas.IncSea = False  # Do not use BRDF atlas for sea surface types
+        if attr.solar_calculations:
+            brdfAtlas = pyrttov.Atlas()
+            brdfAtlas.AtlasPath = "{}/{}".format(attr.rttov_install_dir, "brdf_data")
+            brdfAtlas.loadBrdfAtlas(
+                synsat_month, self
+            )  # Supply Rttov object to enable single-instrument initialisation
+            brdfAtlas.IncSea = False  # Do not use BRDF atlas for sea surface types
 
-        # Set up the surface emissivity/reflectance arrays and associate with the Rttov objects
+            # Set up the surface emissivity/reflectance arrays and associate with the Rttov objects
         surfemisrefl_seviri = np.zeros(
-            (4, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
+                (4, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
         )
 
         self.SurfEmisRefl = surfemisrefl_seviri
@@ -237,7 +244,9 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             # Do not supply a channel list for SEVIRI: this returns emissivity/BRDF values for all
             # *loaded* channels which is what is required
             surfemisrefl_seviri[0, :, :] = irAtlas.getEmisBrdf(self)
-            surfemisrefl_seviri[1, :, :] = brdfAtlas.getEmisBrdf(self)
+
+            if attr.solar_calculations:
+                surfemisrefl_seviri[1, :, :] = brdfAtlas.getEmisBrdf(self)
 
         except pyrttov.RttovError as e:
             # If there was an error the emissivities/BRDFs will not have been modified so it
@@ -286,6 +295,8 @@ class SynSat( SynSatBase ):
         # use data handler to load data
         sdat = data_handler.DataHandler()
         sdat.open_data( inputfile )
+
+        self.synsat.data_handler = sdat
         profs = sdat.data2profile()
 
         # forward profiles to RTTOV
@@ -297,11 +308,38 @@ class SynSat( SynSatBase ):
 
     def run( self ):
 
-       self.run_workflow()
+        self.run_workflow()
 
     def extract_output( self ):
 
-        channels = xr.DataArray(data =  np.array( s.synsat.channels),
+        attr = self.synsat
+
+        # prepare a channels dataset
+        channels = xr.DataArray(data =  np.array( attr.channels),
                                         dims = ['channel',])
 
-        return
+        # trick: we use input data to start output data
+        indat = attr.data_handler.input_data_as_profile
+        alldat = indat.assign_coords({'channel': channels})
+
+        btrefl = xr.DataArray( data = self.BtRefl, coords = [alldat.profile, alldat.channel])
+        alldat['btrefl'] = btrefl
+
+
+        btrefl = alldat['btrefl'].unstack()
+
+        synsat = alldat[[]]
+        for ichan, chan_name in enumerate(btrefl.channel.data):
+
+            # set data
+            synsat[chan_name] = btrefl.sel( channel = chan_name )
+
+            # also set meta data
+            a = {}
+            a['units'] = attr.units[ichan]
+            a['long_name'] = 'Synsat SEVIRI Brightness Temperature at %.1f um' % ( np.float(  chan_name[2:] ) / 10. )
+
+            synsat[chan_name].attrs = a
+
+
+        return synsat

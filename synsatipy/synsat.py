@@ -2,15 +2,19 @@
 
 import sys
 import numpy as np
+import xarray as xr
 
 from starter import pyrttov
+import data_handler
 
 
 class attributes:
+    """ """
     pass
 
 
 class synsat_attributes:
+    """ """
     synsat = attributes()
     atlas = attributes()
     pass
@@ -20,20 +24,26 @@ import pyrttov
 
 
 class SynSatBase(pyrttov.Rttov, synsat_attributes):
-    """
-    Class for calculating MSG Synsats.
-
+    """Class for calculating MSG Synsats.
+    
     The is a child class of pyrttov.Rttov.
-
+    
     Notes
     =====
-
+    
     General Notes on the Workflow:
     1. Options need to be provided
     2. Instrument (MSG-SEVIRI) is loaded
     3. Data needs to be read
     4. Atlasses are loaded (depend on time coordinate in data)
     5. RTTOV is called
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -73,6 +83,17 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         return
 
     def set_default_options(self, **synsat_kwargs):
+        """
+
+        Parameters
+        ----------
+        **synsat_kwargs :
+            
+
+        Returns
+        -------
+
+        """
 
         self.Options.AddInterp = True
         self.Options.AddSolar = True
@@ -83,13 +104,45 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         return
 
     def load_msg(self, synsat_msg_number=3, **synsat_kwargs):
+        """
+
+        Parameters
+        ----------
+        synsat_msg_number :
+             (Default value = 3)
+        **synsat_kwargs :
+            
+
+        Returns
+        -------
+
+        """
+
+        # SEVIRI specifics
+        # ================
+        seviri_allchannel_names = [ 'vis006', 'vis008', 'nir016', 'ir039'
+                                    'wv062',  'wv073', 
+                                    'ir087', 'ir097', 'ir108', 'ir120', 'ir134', 
+                                    'hrv']
+        seviri_var_names = ['rho006', 'rho008', 'rho016', 'bt039', 
+                            'bt062', 'bt073', 'bt087', 'bt097', 'bt108', 'bt120', 'bt134', 'rhohrv']
+
+
+        # MSG options
+        # ===========
+        # For SEVIRI exclude ozone and hi-res vis channels (9 and 12) in this
+        # example
+        # chan_list_seviri = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11)
+ 
+        default_chan_list = (5, 6, 7, 9, 10, 11)
+        chan_list_seviri = synsat_kwargs.get( 'synsat_channel_list', default_chan_list)
 
         attr = self.synsat
 
-        # For SEVIRI exclude ozone and hi-res vis channels (9 and 12) in this
-        # example
-        chan_list_seviri = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11)
+        chan_index = np.array( chan_list_seviri ) - 1
+        attr.channels = np.array(seviri_var_names)[ chan_index  ]
         nchan_seviri = len(chan_list_seviri)
+
 
         # Set the options for each Rttov instance:
         # - the path to the coefficient file must always be specified
@@ -123,6 +176,19 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         return
 
     def load_atlasses(self, synsat_default_month=8, **kwargs):
+        """
+
+        Parameters
+        ----------
+        synsat_default_month :
+             (Default value = 8)
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
 
         # ------------------------------------------------------------------------
         # Load the emissivity and BRDF atlases
@@ -179,7 +245,20 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             sys.stderr.write("Error calling atlas: {!s}".format(e))
         return
 
-    def run_workflow(self, test=True, **kwargs):
+    def run_workflow(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        test :
+             (Default value = True)
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
 
         # load example data
         if self.synsat.nprofiles is None:
@@ -190,5 +269,39 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         # run RTTOV
         self.runDirect()
+
+        return
+
+
+class SynSat( SynSatBase ):
+
+    def __init__(self, *args, **kwargs):
+        
+        # inheritate all important methods & attributes
+        super().__init__(*args, **kwargs)
+
+
+    def load(self, inputfile ):
+
+        # use data handler to load data
+        sdat = data_handler.DataHandler()
+        sdat.open_data( inputfile )
+        profs = sdat.data2profile()
+
+        # forward profiles to RTTOV
+        self.Profiles = profs
+        self.synsat.nprofiles = profs.Nprofiles
+
+        return
+
+
+    def run( self ):
+
+       self.run_workflow()
+
+    def extract_output( self ):
+
+        channels = xr.DataArray(data =  np.array( s.synsat.channels),
+                                        dims = ['channel',])
 
         return

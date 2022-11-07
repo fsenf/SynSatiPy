@@ -19,9 +19,9 @@ def era_name_analyzer(era_name):
     era_name_props['modelname'] = modelname
     era_name_props['data_type'] = data_type
     era_name_props['region']    = region
-    era_name_props['year']      = np.int( year )
-    era_name_props['month']     = np.int( month )
-    era_name_props['day']       = np.int( day )
+    era_name_props['year']      = year
+    era_name_props['month']     = month
+    era_name_props['day']       = day
     
     
     return era_name_props
@@ -38,11 +38,11 @@ def era_name_converter( era_name, mode = '3d_to_2d' ):
     return era_name_converted
 
 
-def open_era( era3d_name, add_pressure = True):
+def open_era( era3d_name, add_pressure = True, qmin = 1.1e-9 ):
     
     
     # open datasets
-    era3d = xr.open_dataset( era3d_name)
+    era3d = xr.open_dataset( era3d_name )
 
     era2d_name = era_name_converter( era3d_name, mode = '3d_to_2d')
     era2d = xr.open_dataset( era2d_name, chunks = {'time':1}  )
@@ -54,7 +54,10 @@ def open_era( era3d_name, add_pressure = True):
     
     if add_pressure:
         era['p'] = calc_pressure( era )  
-       
+      
+
+    era['q'] = era['q'].clip( min = qmin )
+
     return era
 
 

@@ -6,6 +6,7 @@ import xarray as xr
 
 from starter import pyrttov
 import data_handler
+import output
 
 
 class attributes:
@@ -296,6 +297,7 @@ class SynSat( SynSatBase ):
         sdat = data_handler.DataHandler()
         sdat.open_data( inputfile )
 
+        self.synsat.input_filename = inputfile
         self.synsat.data_handler = sdat
         profs = sdat.data2profile()
 
@@ -341,8 +343,20 @@ class SynSat( SynSatBase ):
 
             synsat[chan_name].attrs = a
 
+        del synsat.coords['channel']
 
         attr.output = synsat
+
+
+        # try to write global attrs
+        try:
+            synsat.attrs = output.prepare_global_attrs()
+            synsat.attrs['input_filename'] = attr.input_filename
+
+        except:
+            print( '... [synsat]: WARNING: fail to write global attributes' )
+
+        self.synsat.output_data = synsat
 
         return synsat
 

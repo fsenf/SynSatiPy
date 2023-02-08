@@ -164,6 +164,12 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # - enable the store_trans wrapper option for MHS to provide access to
         #   RTTOV transmission structure
 
+        # Add cloud opt. props file
+        cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_msg_{synsat_msg_number}_seviri.dat"
+        self.FileSccld = cldaer_filename
+        print(f"... [synsat] set cloud / aerosol file to  {cldaer_filename}")
+
+
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_msg_{synsat_msg_number}_seviri_o3.dat"
         self.FileCoef = coef_filename
         print(f"... [synsat] load coefficient file {coef_filename}")
@@ -180,12 +186,6 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         except self.RttovError as e:
             sys.stderr.write("Error loading instrument(s): {!s}".format(e))
             sys.exit(1)
-
-        # Add also cloud opt. props file
-        cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_msg_{synsat_msg_number}_seviri.dat"
-        self.FileSccld = cldaer_filename
-        print(f"... [synsat] set cloud / aerosol file to  {cldaer_filename}")
-
 
         return
 

@@ -98,6 +98,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         self.Options.AddInterp = True
         self.Options.AddSolar = True
+        self.Options.AddClouds = True
         self.Options.VerboseWrapper = True
 
         self.synsat.nprofiles = None
@@ -179,6 +180,12 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         except self.RttovError as e:
             sys.stderr.write("Error loading instrument(s): {!s}".format(e))
             sys.exit(1)
+
+        # Add also cloud opt. props file
+        cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_msg_{synsat_msg_number}_seviri.dat"
+        self.FileSccld = cldaer_filename
+        print(f"... [synsat] set cloud / aerosol file to  {cldaer_filename}")
+
 
         return
 

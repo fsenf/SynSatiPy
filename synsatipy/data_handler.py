@@ -161,6 +161,22 @@ class DataHandler( object ):
         tvec = np.expand_dims( tvec, axis = 0)[:, :6]
         myProfiles.DateTimes = tvec.repeat( nprofiles, axis = 0 )
         
+        # testing the cloud vars here
+        # myProfiles.Ngases = 4
+        q = profs['q'].data.T
+        qc = profs['clwc'].data.T
+        qi = profs['ciwc'].data.T
+        cc = profs['cc'].data.T
+
+        gases = np.stack([q, cc, qc, qi])
+        myProfiles.MmrCldAer = 0
+        myProfiles.Gases = gases
+        myProfiles.GasId = np.array( [1, 20, 21, 30] )
+        
+        # this is Baum + McFarquhar
+        myProfiles.IceCloud = np.hstack([1 * ones, 4 * ones,]) 
+        
+
         return myProfiles
         
     

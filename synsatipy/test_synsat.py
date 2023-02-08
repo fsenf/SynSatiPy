@@ -19,8 +19,9 @@ def test_synsat_on_test_profile(accuracy=1.0):
     -----
     The test will fail when profiles are changed because expected result is hardcoded.
     """
-
-    s = SynSatTest()
+    
+    kwargs = dict( synsat_channel_list = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11) )
+    s = SynSatTest( **kwargs )
     s.run_workflow()
 
     target = np.array(

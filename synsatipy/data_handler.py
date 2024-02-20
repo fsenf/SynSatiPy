@@ -169,7 +169,7 @@ class DataHandler( object ):
         cc = profs['cc'].data.T
 
         gases = np.stack([q, cc, qc, qi])
-        myProfiles.MmrCldAer = 0
+        myProfiles.MmrCldAer = 1
         myProfiles.Gases = gases
         myProfiles.GasId = np.array( [1, 20, 21, 30] )
         

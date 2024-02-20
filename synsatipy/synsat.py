@@ -298,13 +298,26 @@ class SynSat( SynSatBase ):
         super().__init__(*args, **kwargs)
 
 
-    def load(self, inputfile ):
+    def load(self, inputfile_or_data ):
 
         # use data handler to load data
         sdat = data_handler.DataHandler()
-        sdat.open_data( inputfile )
 
-        self.synsat.input_filename = inputfile
+        # check if file or dataset is provided
+        if type( inputfile_or_data ) == type(''):
+            
+            inputfile = inputfile_or_data
+            print(f"... [synsat] read data from file  {inputfile}")
+            
+            self.synsat.input_filename = inputfile
+            
+            sdat.open_data( inputfile )
+
+        elif type( inputfile_or_data ) == type( xr.Dataset() ):
+            sdat.input_data = inputfile_or_data
+
+
+
         self.synsat.data_handler = sdat
         profs = sdat.data2profile()
 

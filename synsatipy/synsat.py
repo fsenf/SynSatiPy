@@ -11,11 +11,13 @@ import output
 
 class attributes:
     """ """
+
     pass
 
 
 class synsat_attributes:
     """ """
+
     synsat = attributes()
     atlas = attributes()
     pass
@@ -26,12 +28,12 @@ import pyrttov
 
 class SynSatBase(pyrttov.Rttov, synsat_attributes):
     """Class for calculating MSG Synsats.
-    
+
     The is a child class of pyrttov.Rttov.
-    
+
     Notes
     =====
-    
+
     General Notes on the Workflow:
     1. Options need to be provided
     2. Instrument (MSG-SEVIRI) is loaded
@@ -89,7 +91,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         Parameters
         ----------
         **synsat_kwargs :
-            
+
 
         Returns
         -------
@@ -113,7 +115,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         synsat_msg_number :
              (Default value = 3)
         **synsat_kwargs :
-            
+
 
         Returns
         -------
@@ -122,35 +124,65 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         # SEVIRI specifics
         # ================
-        seviri_allchannel_names = [ 'vis006', 'vis008', 'nir016', 'ir039'
-                                    'wv062',  'wv073', 
-                                    'ir087', 'ir097', 'ir108', 'ir120', 'ir134', 
-                                    'hrv']
-        seviri_var_names = ['rho006', 'rho008', 'rho016', 'bt039', 
-                            'bt062', 'bt073', 'bt087', 'bt097', 'bt108', 'bt120', 'bt134', 'rhohrv']
+        seviri_allchannel_names = [
+            "vis006",
+            "vis008",
+            "nir016",
+            "ir039" "wv062",
+            "wv073",
+            "ir087",
+            "ir097",
+            "ir108",
+            "ir120",
+            "ir134",
+            "hrv",
+        ]
+        seviri_var_names = [
+            "rho006",
+            "rho008",
+            "rho016",
+            "bt039",
+            "bt062",
+            "bt073",
+            "bt087",
+            "bt097",
+            "bt108",
+            "bt120",
+            "bt134",
+            "rhohrv",
+        ]
 
-        seviri_var_units = 3*['-',] + 8*['K',] + ['-']
-
+        seviri_var_units = (
+            3
+            * [
+                "-",
+            ]
+            + 8
+            * [
+                "K",
+            ]
+            + ["-"]
+        )
 
         # MSG options
         # ===========
         # For SEVIRI exclude ozone and hi-res vis channels (9 and 12) in this
         # example
         # chan_list_seviri = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11)
- 
+
         default_chan_list = (5, 6, 7, 9, 10, 11)
-        chan_list_seviri = synsat_kwargs.get( 'synsat_channel_list', default_chan_list)
+        chan_list_seviri = synsat_kwargs.get("synsat_channel_list", default_chan_list)
 
         attr = self.synsat
 
-        chan_index = np.array( chan_list_seviri ) - 1
-        
-        attr.channels = np.array(seviri_var_names)[ chan_index ]
-        attr.units    = np.array(seviri_var_units)[ chan_index ]
+        chan_index = np.array(chan_list_seviri) - 1
+
+        attr.channels = np.array(seviri_var_names)[chan_index]
+        attr.units = np.array(seviri_var_units)[chan_index]
         nchan_seviri = len(chan_list_seviri)
 
         # check if solar channel are included
-        attr.solar_calculations = np.any( np.array( chan_list_seviri ) < 5 )
+        attr.solar_calculations = np.any(np.array(chan_list_seviri) < 5)
 
         # Set the options for each Rttov instance:
         # - the path to the coefficient file must always be specified
@@ -168,7 +200,6 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_msg_{synsat_msg_number}_seviri.dat"
         self.FileSccld = cldaer_filename
         print(f"... [synsat] set cloud / aerosol file to  {cldaer_filename}")
-
 
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_msg_{synsat_msg_number}_seviri_o3.dat"
         self.FileCoef = coef_filename
@@ -197,7 +228,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         synsat_default_month :
              (Default value = 8)
         **kwargs :
-            
+
 
         Returns
         -------
@@ -237,7 +268,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
             # Set up the surface emissivity/reflectance arrays and associate with the Rttov objects
         surfemisrefl_seviri = np.zeros(
-                (4, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
+            (4, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
         )
 
         self.SurfEmisRefl = surfemisrefl_seviri
@@ -270,7 +301,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         test :
              (Default value = True)
         **kwargs :
-            
+
 
         Returns
         -------
@@ -290,33 +321,29 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         return
 
 
-class SynSat( SynSatBase ):
-
+class SynSat(SynSatBase):
     def __init__(self, *args, **kwargs):
-        
+
         # inheritate all important methods & attributes
         super().__init__(*args, **kwargs)
 
-
-    def load(self, inputfile_or_data ):
+    def load(self, inputfile_or_data):
 
         # use data handler to load data
         sdat = data_handler.DataHandler()
 
         # check if file or dataset is provided
-        if type( inputfile_or_data ) == type(''):
-            
+        if type(inputfile_or_data) == type(""):
+
             inputfile = inputfile_or_data
             print(f"... [synsat] read data from file  {inputfile}")
-            
+
             self.synsat.input_filename = inputfile
-            
-            sdat.open_data( inputfile )
 
-        elif type( inputfile_or_data ) == type( xr.Dataset() ):
+            sdat.open_data(inputfile)
+
+        elif type(inputfile_or_data) == type(xr.Dataset()):
             sdat.input_data = inputfile_or_data
-
-
 
         self.synsat.data_handler = sdat
         profs = sdat.data2profile()
@@ -327,64 +354,67 @@ class SynSat( SynSatBase ):
 
         return
 
-
-    def run( self ):
+    def run(self):
 
         self.run_workflow()
 
-    def extract_output( self ):
+    def extract_output(self):
 
         attr = self.synsat
 
         # prepare a channels dataset
-        channels = xr.DataArray(data =  np.array( attr.channels),
-                                        dims = ['channel',])
+        channels = xr.DataArray(
+            data=np.array(attr.channels),
+            dims=[
+                "channel",
+            ],
+        )
 
         # trick: we use input data to start output data
         indat = attr.data_handler.input_data_as_profile
-        alldat = indat.assign_coords({'channel': channels})
+        alldat = indat.assign_coords({"channel": channels})
 
-        btrefl = xr.DataArray( data = self.BtRefl, coords = [alldat.profile, alldat.channel])
-        alldat['btrefl'] = btrefl
+        btrefl = xr.DataArray(data=self.BtRefl, coords=[alldat.profile, alldat.channel])
+        alldat["btrefl"] = btrefl
 
-
-        btrefl = alldat['btrefl'].unstack()
+        btrefl = alldat["btrefl"].unstack()
 
         synsat = alldat[[]]
         for ichan, chan_name in enumerate(btrefl.channel.data):
 
             # set data
-            synsat[chan_name] = btrefl.sel( channel = chan_name )
+            synsat[chan_name] = btrefl.sel(channel=chan_name)
 
             # also set meta data
             a = {}
-            a['units'] = attr.units[ichan]
-            a['long_name'] = 'Synsat SEVIRI Brightness Temperature at %.1f um' % ( np.float(  chan_name[2:] ) / 10. )
+            a["units"] = attr.units[ichan]
+            a["long_name"] = "Synsat SEVIRI Brightness Temperature at %.1f um" % (
+                np.float(chan_name[2:]) / 10.0
+            )
 
             synsat[chan_name].attrs = a
 
-        del synsat.coords['channel']
+        del synsat.coords["channel"]
 
         attr.output = synsat
-
 
         # try to write global attrs
         try:
             synsat.attrs = output.prepare_global_attrs()
-            synsat.attrs['input_filename'] = attr.input_filename
+            synsat.attrs["input_filename"] = attr.input_filename
 
         except:
-            print( '... [synsat]: WARNING: fail to write global attributes' )
+            print("... [synsat]: WARNING: fail to write global attributes")
 
         self.synsat.output_data = synsat
 
         return synsat
 
-    def save( self, output_filename ):
+    def save(self, output_filename):
 
         out = self.extract_output()
-        
+
         print(f"... [synsat] write synsat data to {output_filename}")
-        out.to_netcdf( output_filename )
+        out.to_netcdf(output_filename)
 
         return

@@ -11,7 +11,7 @@ import git
 
 # Version
 # =======
-__version__ = 0.1 
+__version__ = 0.1
 
 
 # Git Hash
@@ -22,5 +22,4 @@ __git_hash__ = repo.head.object.hexsha
 
 # Synsat Path
 # ===========
-__synsat_path__ = os.path.dirname( __file__ )
-
+__synsat_path__ = os.path.dirname(__file__)

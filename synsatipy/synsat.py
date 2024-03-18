@@ -4,9 +4,9 @@ import sys
 import numpy as np
 import xarray as xr
 
-from starter import pyrttov
-import data_handler
-import output
+from synsatipy.starter import pyrttov
+import synsatipy.data_handler as data_handler
+import synsatipy.output as output
 
 
 class attributes:
@@ -22,8 +22,6 @@ class synsat_attributes:
     atlas = attributes()
     pass
 
-
-import pyrttov
 
 
 class SynSatBase(pyrttov.Rttov, synsat_attributes):

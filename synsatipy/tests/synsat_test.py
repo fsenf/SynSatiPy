@@ -2,16 +2,9 @@
 
 import numpy as np
 
-# little hack till package structure is set up
-import sys
-sys.path.append('.')
-sys.path.append('..')
+from synsatipy.starter import pyrttov
 
-print( sys.path )
-
-from starter import pyrttov
-
-from synsat import SynSatBase
+from synsatipy.synsat import SynSatBase
 
 
 class SynSatTest(SynSatBase):

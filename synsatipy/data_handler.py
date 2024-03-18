@@ -6,7 +6,7 @@ import datetime
 import xarray as xr
 
 
-from starter import pyrttov
+from synsatipy.starter import pyrttov
 
 ######################################################################
 ######################################################################

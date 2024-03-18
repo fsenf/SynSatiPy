@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import numpy as np
-from starter import pyrttov
-
 from synsat import SynSatBase
+
+from starter import pyrttov
 
 
 class SynSatTest(SynSatBase):

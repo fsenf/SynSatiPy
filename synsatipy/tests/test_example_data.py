@@ -8,3 +8,7 @@ def test_examble_data(  ):
 
     assert 'medi' in eraname
 
+    iconname = synsat_example_data.get_example_data( 'icon01' )
+
+    assert 'ifces2' in iconname
+

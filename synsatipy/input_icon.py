@@ -6,7 +6,7 @@ import numpy as np
 import xarray as xr
 
 
-import timetools
+import synsatipy.utils.timetools as timetools
 
 
 def icon_name_analyzer(icon_name):

@@ -8,6 +8,10 @@ import xarray as xr
 
 from synsatipy.starter import pyrttov
 
+import synsatipy.input_icon as input_icon
+import synsatipy.input_era as input_era
+
+
 ######################################################################
 ######################################################################
 
@@ -133,14 +137,14 @@ class DataHandler(object):
 
         if model == "era":
 
-            from input_era import open_era
+#            from input_era import open_era
 
-            self.input_data = open_era(filename, **kwargs)
+            self.input_data = input_era.open_era(filename, **kwargs)
 
         elif model == "icon":
-            from input_icon import open_icon
+#            from input_icon import open_icon
 
-            self.input_data = open_icon(filename, **kwargs)
+            self.input_data = input_icon.open_icon(filename, **kwargs)
 
         return
 

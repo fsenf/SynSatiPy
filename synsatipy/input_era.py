@@ -70,6 +70,9 @@ def calc_pressure(era):
     ps = era["SP"]
 
     p = B * ps + A
+    
+    p = p.rename({'nhym': 'lev'})
     p.attrs = dict(long_name="atmospheric pressure", units="Pa")
+
 
     return p

@@ -95,13 +95,20 @@ class DataHandler(object):
     def open_data(
         self,
         filename,
+        **kwargs
     ):
 
         if self.model == "era":
 
             from input_era import open_era
 
-            self.input_data = open_era(filename)
+            self.input_data = open_era(filename, **kwargs)
+
+        elif self.model == "icon":
+            from input_icon import open_icon
+
+            self.input_data = open_icon(filename, **kwargs)
+
         return
 
     def data2profile(self):

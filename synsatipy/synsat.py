@@ -327,10 +327,12 @@ class SynSat(SynSatBase):
         # inheritate all important methods & attributes
         super().__init__(*args, **kwargs)
 
-    def load(self, inputfile_or_data):
+    def load(self, inputfile_or_data, **kwargs):
+
+        model = kwargs.get('model', 'era')
 
         # use data handler to load data
-        sdat = data_handler.DataHandler()
+        sdat = data_handler.DataHandler(model=model)
 
         # check if file or dataset is provided
         if type(inputfile_or_data) == type(""):

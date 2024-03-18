@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
 import numpy as np
+
+# little hack till package structure is set up
+import sys
+sys.path.append('.')
+sys.path.append('..')
+
+print( sys.path )
+
 from starter import pyrttov
 
 from synsat import SynSatBase

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
 import numpy as np
-from synsat import SynSatBase
+
+from synsatipy.starter import pyrttov
+
+from synsatipy.synsat import SynSatBase
 
 from starter import pyrttov
 

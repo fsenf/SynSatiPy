@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import datetime
-import starter
+
+import synsatipy.starter
 
 
 def prepare_global_attrs():

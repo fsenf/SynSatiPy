@@ -4,8 +4,9 @@ import sys
 import numpy as np
 import xarray as xr
 
-import data_handler
-import output
+from synsatipy.starter import pyrttov
+import synsatipy.data_handler as data_handler
+import synsatipy.output as output
 
 from starter import pyrttov
 
@@ -22,8 +23,6 @@ class synsat_attributes:
     atlas = attributes()
     pass
 
-
-import pyrttov
 
 
 class SynSatBase(pyrttov.Rttov, synsat_attributes):
@@ -327,10 +326,12 @@ class SynSat(SynSatBase):
         # inheritate all important methods & attributes
         super().__init__(*args, **kwargs)
 
-    def load(self, inputfile_or_data):
+    def load(self, inputfile_or_data, **kwargs):
+
+        model = kwargs.get('model', 'era')
 
         # use data handler to load data
-        sdat = data_handler.DataHandler()
+        sdat = data_handler.DataHandler(model=model)
 
         # check if file or dataset is provided
         if type(inputfile_or_data) == type(""):

@@ -6,7 +6,7 @@ import datetime
 import xarray as xr
 
 
-from starter import pyrttov
+from synsatipy.starter import pyrttov
 
 ######################################################################
 ######################################################################
@@ -84,9 +84,37 @@ def lonlat2azizen(lon, lat):
 ######################################################################
 ######################################################################
 
+def autodetect_model_by_filename( fname ):
+
+    model = None
+
+    era_keys = ['era']
+
+    for k in era_keys:
+        if k in fname:
+            model = "era"
+
+    icon_keys = ['icon', 'ifces']
+
+    for k in icon_keys:
+        if k in fname:
+            model = "icon"
+
+    
+    if model is None:
+        raise ValueError( 'Model autodetect failed!' ) 
+
+
+    return model
+
+######################################################################
+######################################################################
+
+
+
 
 class DataHandler(object):
-    def __init__(self, model="era", return_profile=True, **kwargs):
+    def __init__(self, model="auto", return_profile=True, **kwargs):
 
         self.model = model
 
@@ -95,13 +123,25 @@ class DataHandler(object):
     def open_data(
         self,
         filename,
+        **kwargs
     ):
 
-        if self.model == "era":
+        if self.model == 'auto':
+            model = autodetect_model_by_filename( filename )
+        else:
+            model = model
+
+        if model == "era":
 
             from input_era import open_era
 
-            self.input_data = open_era(filename)
+            self.input_data = open_era(filename, **kwargs)
+
+        elif model == "icon":
+            from input_icon import open_icon
+
+            self.input_data = open_icon(filename, **kwargs)
+
         return
 
     def data2profile(self):

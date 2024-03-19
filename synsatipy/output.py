@@ -2,7 +2,7 @@
 
 import datetime
 
-import synsatipy.starter
+import synsatipy.starter as starter
 
 
 def prepare_global_attrs():

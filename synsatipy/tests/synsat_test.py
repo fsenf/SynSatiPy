@@ -6,8 +6,6 @@ from synsatipy.starter import pyrttov
 
 from synsatipy.synsat import SynSatBase
 
-from starter import pyrttov
-
 
 class SynSatTest(SynSatBase):
     def __init__(self, *args, **kwargs):

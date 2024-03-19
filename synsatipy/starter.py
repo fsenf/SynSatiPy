@@ -28,3 +28,18 @@ except:
 # Synsat Path
 # ===========
 __synsat_path__ = os.path.dirname(__file__)
+
+
+
+# RTTOV Version
+#==============
+if '13.1' in RTTOV_PYTHON_WRAPPER:
+    __rttov_version__ = 13.1
+
+elif '13.2' in RTTOV_PYTHON_WRAPPER:
+    __rttov_version__ = 13.2
+
+else:
+    __rttov_version__ = 'Unknown'
+
+

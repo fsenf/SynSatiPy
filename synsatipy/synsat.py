@@ -4,11 +4,9 @@ import sys
 import numpy as np
 import xarray as xr
 
-from synsatipy.starter import pyrttov
+from synsatipy.starter import pyrttov, __rttov_version__
 import synsatipy.data_handler as data_handler
 import synsatipy.output as output
-
-from starter import pyrttov
 
 class attributes:
     """ """
@@ -72,6 +70,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         rttov_install_dir = "/".join(pyrttov_path.split("/")[:-2])
 
         attr.rttov_install_dir = rttov_install_dir
+
+        attr.rttov_version = __rttov_version__
 
         # inheritate all important methods & attributes
         super().__init__(*args, **kwargs)
@@ -266,8 +266,14 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             brdfAtlas.IncSea = False  # Do not use BRDF atlas for sea surface types
 
             # Set up the surface emissivity/reflectance arrays and associate with the Rttov objects
+        
+        if attr.rttov_version >= 13.2:
+            nemis_classes = 5
+        else:
+            nemis_classes = 4
+        
         surfemisrefl_seviri = np.zeros(
-            (5, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
+            (nemis_classes, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
         )
 
         self.SurfEmisRefl = surfemisrefl_seviri

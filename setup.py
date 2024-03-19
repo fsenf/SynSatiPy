@@ -13,6 +13,21 @@ def get_packages(package_name):
     return packages
 
 
+def get_requirements(requirements_filename):
+    requirements_file = Path(__file__).parent / requirements_filename
+    assert requirements_file.exists()
+    with open(requirements_file) as f:
+        requirements = [
+            line.strip() for line in f.readlines() if not line.startswith("#")
+        ]
+    # Iris has a different name on PyPI...
+    if "iris" in requirements:
+        requirements.remove("iris")
+        requirements.append("scitools-iris")
+    return requirements
+
+
+
 with open("README.md", "r") as fh:
     description = fh.read()
 
@@ -28,5 +43,6 @@ setuptools.setup(
 #    url="https://github.com/gituser/test-tackage",
     license="GPL-v3",
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=get_requirements("requirements.txt"),
+    test_requires=["pytest"],
 )

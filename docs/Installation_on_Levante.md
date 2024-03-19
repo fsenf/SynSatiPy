@@ -7,6 +7,33 @@ Two steps are needed to get SynsatiPy running on "standard" datasets. First, the
 
 ## Step I: Installation of RTTOV
 
+After you downloaded and untared the RTTOV source code:
+
+**(i) link in the correct Makefile**
+```bash
+cd build
+mv Makefile.local Makefile.local~
+cp <PATH2CONFIG>/Makefile.levante_norpath.ifort .
+ln -s Makefile.levante_norpath.ifort Makefile.local
+```
+
+**(ii) setup the correct architecture**
+```bash
+cp <PATH2CONFIG>/ifort-openmp-levante-ext arch
+```
+
+
+
+**(iii) run compilation**
+```bash
+make ARCH=ifort-openmp-levante-ext -j 8
+```
+
+**(iv) additional data**
+
+*see RTTOV documentation*
+
+
 ## Step II: Installation of SynSatiPy
 
 

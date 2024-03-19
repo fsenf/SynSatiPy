@@ -1,0 +1,9 @@
+# Python dependencies
+numpy
+scipy
+pandas
+matplotlib
+h5py
+netcdf4
+xarray
+cartopy

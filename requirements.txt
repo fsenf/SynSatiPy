@@ -2,8 +2,9 @@
 numpy
 scipy
 pandas
-matplotlib
 h5py
 netcdf4
 xarray
+dask
 cartopy
+matplotlib

@@ -1,0 +1,146 @@
+# ------------------------------------------------------------------------------
+# Use this file to include external libraries when compiling RTTOV.
+# It is recommended to compile RTTOV with the HDF5 library.
+# Any other external libraries required may also be specified here.
+# ------------------------------------------------------------------------------
+
+
+# To compile RTTOV against the HDF5 library you must:
+# - specify the path to the library in the HDF5_PREFIX variable below
+# - uncomment one FFLAGS_HDF5 line and one LDFLAGS_HDF5 line which are 
+#   appropriate for your installed library.
+
+# To compile RTTOV against the NetCDF library (optional for HTFRTC) you must:
+# - specify the path to the library in the NETCDF_PREFIX variable below
+# - uncomment one FFLAGS_NETCDF line and one LDFLAGS_NETCDF line which are 
+#   appropriate for your installed library.
+
+# Similarly you can optionally specify a LAPACK library to compile against 
+# instead of using the LAPACK source included in the RTTOV package.
+
+# The values of some physical constants were updated to the latest NIST values
+# from the RTTOV v12 values. To use the RTTOV v12 values instead pass the
+# _RTTOV12 macro in the compilation.
+
+# After editing this file run the build/rttov_compile.sh script from within the 
+# RTTOV src/ directory to compile RTTOV.
+
+
+
+# ------------------------------------------------------------------------------
+# HDF5 library: optional, required for HDF5 coefficient file I/O,
+#               emissivity/BRDF atlases and RTTOV GUI.
+#
+# NB The _RTTOV_HDF macro must be defined to compile with HDF: this is done 
+#    within the FFLAGS_HDF5 specified below. If not using the rttov_compile.sh 
+#    script, then from within the src/ directory you must first run:
+#    $ ../build/Makefile.PL RTTOV_HDF=1
+# ------------------------------------------------------------------------------
+
+HDF5_PREFIX  = /sw/spack-levante/hdf5-1.12.1-tvymb5
+#HDF5_PREFIX  = /sw/spack-levante/hdf5-1.12.1-t746ip
+
+# --- Uncomment one FFLAGS_HDF5 line:
+
+# For most compilers:
+FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include 
+
+# For xlf on AIX:
+# FFLAGS_HDF5  = -WF,-D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
+
+# --- Uncomment one LDFLAGS_HDF5 line:
+
+# In most cases:
+LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5 -lhdf5_hl -lhdf5_fortran -lhdf5_hl_fortran  -lz  #  -Wl,-rpath,$(HDF5_PREFIX)/lib 
+
+# But you may find that you must also specify libz:
+# (NB for NAG Fortran you may also need to add -ldl)
+# LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
+
+
+
+# ------------------------------------------------------------------------------
+# NetCDF v4 library - optional for HTFRTC (otherwise use ASCII coef files)
+#
+# NB The _RTTOV_NETCDF macro must be defined to compile with NetCDF: this is
+#    done within the FFLAGS_NETCDF specified below.
+#
+# Since NetCDF v4 depends on the HDF5 library you may also need to link against 
+# the HDF5 library as above.
+# ------------------------------------------------------------------------------
+
+NETCDF_PREFIX  = /sw/spack-levante/netcdf-fortran-4.5.3-k6xq5g
+#NETCDF_PREFIX  = /sw/spack-levante/netcdf-fortran-4.5.3-pvmcx6
+
+
+# --- Uncomment one FFLAGS_NETCDF line:
+
+# For most compilers:
+FFLAGS_NETCDF  = -D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include  #-Wl,-rpath,$(NETCDF_PREFIX)/lib
+
+# For xlf on AIX:
+# FFLAGS_NETCDF  = -WF,-D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include
+
+# --- Uncomment one LDFLAGS_NETCDF line:
+
+# For NetCDF v4.1:
+# LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff -lnetcdf
+
+# For NetCDF v4.2 and later:
+LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff  # -Wl,-rpath,$(NETCDF_PREFIX)/lib
+
+
+
+# ------------------------------------------------------------------------------
+# LAPACK library: optional
+# The LAPACK routines used by RTTOV are included in src/main/lapack.f.
+# If you want to compile RTTOV against an external LAPACK library instead (e.g.
+# in order to resolve conflicts at the linking stage) then specify this here.
+# If not using the rttov_compile.sh script, then from within the src/ directory
+# you must first run the ../build/Makefile.PL script with the argument
+# RTTOV_USER_LAPACK=1 to exclude lapack.f from the Makefiles.
+# ------------------------------------------------------------------------------
+
+# LAPACK_PREFIX = path-to-lapack-install
+
+# --- Uncomment the FFLAGS_LAPACK and LDFLAGS_LAPACK lines and edit as
+#     required for your installation:
+
+# FFLAGS_LAPACK  = $(FFLAG_MOD)$(LAPACK_PREFIX)/include
+# LDFLAGS_LAPACK = -L$(LAPACK_PREFIX)/lib -llapack
+
+
+
+# ------------------------------------------------------------------------------
+# To use the same physical constant values as in RTTOV v12 uncomment one of the
+# following lines appropriate for your compiler
+# ------------------------------------------------------------------------------
+
+# For most compilers:
+# FFLAGS_RTTOV12 = -D_RTTOV12
+
+# For xlf on AIX:
+# FFLAGS_RTTOV12 = -WF,-D_RTTOV12
+
+
+
+# ------------------------------------------------------------------------------
+# Usually there is no need to edit anything below this line
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Optional: specify other libraries here e.g. DrHook
+# ------------------------------------------------------------------------------
+DRHOOK_PREFIX  = path-to-drhook-install
+# FFLAGS_DRHOOK  = -I$(DRHOOK_PREFIX)
+# LDFLAGS_DRHOOK = -L$(DRHOOK_PREFIX) -ldrhook -lmpi_serial
+
+
+
+# ------------------------------------------------------------------------------
+# Include all macros on the following lines:
+# (Does not need editing unless you add more libraries)
+# ------------------------------------------------------------------------------
+
+FFLAGS_EXTERN  = $(FFLAGS_NETCDF)  $(FFLAGS_HDF5)  $(FFLAGS_DRHOOK)  $(FFLAGS_LAPACK)  $(FFLAGS_RTTOV12)
+LDFLAGS_EXTERN = $(LDFLAGS_NETCDF) $(LDFLAGS_HDF5) $(LDFLAGS_DRHOOK) $(LDFLAGS_LAPACK)

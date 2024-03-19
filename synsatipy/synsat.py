@@ -8,6 +8,7 @@ from synsatipy.starter import pyrttov
 import synsatipy.data_handler as data_handler
 import synsatipy.output as output
 
+from starter import pyrttov
 
 class attributes:
     """ """
@@ -266,7 +267,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
             # Set up the surface emissivity/reflectance arrays and associate with the Rttov objects
         surfemisrefl_seviri = np.zeros(
-            (4, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
+            (5, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
         )
 
         self.SurfEmisRefl = surfemisrefl_seviri

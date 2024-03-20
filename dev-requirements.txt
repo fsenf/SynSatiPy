@@ -1,0 +1,9 @@
+pytest
+black
+ipykernel
+nbsphinx
+linkify-it-py
+myst-parser
+sphinx_rtd_theme
+sphinx-markdown-tables
+pandoc

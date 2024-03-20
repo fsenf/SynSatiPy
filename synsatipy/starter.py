@@ -4,12 +4,28 @@ import pandas as pd
 import xarray as xr
 
 
-RTTOV_PYTHON_WRAPPER = os.environ["RTTOV_PYTHON_WRAPPER"]
 
-sys.path.append(RTTOV_PYTHON_WRAPPER)
+try:
+    RTTOV_PYTHON_WRAPPER = os.environ["RTTOV_PYTHON_WRAPPER"]
 
-import pyrttov
+    sys.path.append(RTTOV_PYTHON_WRAPPER)
 
+    import pyrttov
+
+except:
+
+    # this dirty hack allows API reference documentation be generated without having RTTOV installed
+    RTTOV_PYTHON_WRAPPER = 'Undefined'
+    
+    
+    from abc import ABC
+    class pyrttov_Empty():
+        def __init__(self):
+            self.Rttov = ABC
+
+    pyrttov = pyrttov_Empty()
+
+    print('FATAL ERROR: RTTOV is not found. Please set env variable "RTTOV_PYTHON_WRAPPER"!')
 
 # Version
 # =======

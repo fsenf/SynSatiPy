@@ -347,7 +347,7 @@ class SynSat(SynSatBase):
 
             self.synsat.input_filename = inputfile
 
-            sdat.open_data(inputfile)
+            sdat.open_data(inputfile, **kwargs)
 
         elif type(inputfile_or_data) == type(xr.Dataset()):
             sdat.input_data = inputfile_or_data
@@ -396,7 +396,7 @@ class SynSat(SynSatBase):
             a = {}
             a["units"] = attr.units[ichan]
             a["long_name"] = "Synsat SEVIRI Brightness Temperature at %.1f um" % (
-                np.float(chan_name[2:]) / 10.0
+                np.float32(chan_name[2:]) / 10.0
             )
 
             synsat[chan_name].attrs = a

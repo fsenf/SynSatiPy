@@ -129,22 +129,28 @@ class DataHandler(object):
         filename,
         **kwargs
     ):
+        isel = kwargs.pop('isel', None)
 
         if self.model == 'auto':
             model = autodetect_model_by_filename( filename )
         else:
-            model = model
+            model = self.model
 
         if model == "era":
 
 #            from input_era import open_era
 
-            self.input_data = input_era.open_era(filename, **kwargs)
+            indat = input_era.open_era(filename, **kwargs)
 
         elif model == "icon":
 #            from input_icon import open_icon
 
-            self.input_data = input_icon.open_icon(filename, **kwargs)
+            indat = input_icon.open_icon(filename, **kwargs)
+
+        if isel is not None:
+            self.input_data = indat.isel( **isel )
+        else:
+            self.input_data = indat
 
         return
 

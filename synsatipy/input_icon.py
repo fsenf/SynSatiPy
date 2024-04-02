@@ -88,15 +88,17 @@ def icon_variable_mapping(
 
 def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True):
 
+    input_options = {"chunks": "auto"}
+
     # open base datasets
-    icon3dbase = xr.open_dataset(icon3d_name)
+    icon3dbase = xr.open_dataset(icon3d_name, **input_options)
 
     icon_name_props = icon_name_analyzer(icon3d_name)
 
     # open hydrometeors
     icon_name_props.update({"variable_stack": "full_qmix"})
     icon_others_name = icon_name_creator(icon_name_props)
-    icon3dqmix = xr.open_dataset(icon_others_name)
+    icon3dqmix = xr.open_dataset(icon_others_name, **input_options)
 
     icon3d = xr.merge([icon3dbase, icon3dqmix])
 
@@ -108,23 +110,21 @@ def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True):
         }
     )
     icon_others_name = icon_name_creator(icon_name_props)
-    icon2d = xr.open_dataset(icon_others_name)
+    icon2d = xr.open_dataset(icon_others_name, **input_options)
 
     # only select 3d timeslot
     icon2d = icon2d.sel(time=icon3d.time).squeeze(dim="height")
-
 
     # merge dataset
     icon = xr.merge([icon2d, icon3d])
 
     # modify variables
     icon["qv"] = icon["qv"].clip(min=qmin)
-    icon["clc"] = icon["clc"] / 100.    # unit change from [0, 100] % to [0, 1] 
-    
+    icon["clc"] = icon["clc"] / 100.0  # unit change from [0, 100] % to [0, 1]
 
     # set correct time object
-    t = timetools.convert_timevec( icon.time.data )
-    icon = icon.assign_coords({'time':t})
+    t = timetools.convert_timevec(icon.time.data)
+    icon = icon.assign_coords({"time": t})
 
     if name_remapping:
         return icon_variable_mapping(icon)

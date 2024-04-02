@@ -179,7 +179,7 @@ class DataHandler(object):
         else:
             isel = {"profile": slice(0, None)}
 
-        profs = stacked_input_data.isel(**isel)
+        profs = stacked_input_data.isel(**isel).load()
 
         # initialize profile
         nlevels = profs.dims["lev"]
@@ -201,6 +201,9 @@ class DataHandler(object):
         # get satellite angles
         lon, lat = profs["lon"].data, profs["lat"].data
         azi, zen = lonlat2azizen(lon, lat)
+
+        # set max zen angle
+        zen = np.clip(zen, 0, 80)
 
         sunazi, sunzen = zeros[:, :1], zeros[:, :1]
 

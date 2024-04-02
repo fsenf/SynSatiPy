@@ -39,6 +39,7 @@ try:
     repo = git.Repo(search_parent_directories=True)
     __git_hash__ = repo.head.object.hexsha
 except:
+    __git_hash__ = 'Undefined'
     print('no git hash can be obtained')
 
 # Synsat Path

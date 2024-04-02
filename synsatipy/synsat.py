@@ -8,6 +8,7 @@ from synsatipy.starter import pyrttov, __rttov_version__
 import synsatipy.data_handler as data_handler
 import synsatipy.output as output
 
+
 class attributes:
     """ """
 
@@ -20,7 +21,6 @@ class synsat_attributes:
     synsat = attributes()
     atlas = attributes()
     pass
-
 
 
 class SynSatBase(pyrttov.Rttov, synsat_attributes):
@@ -63,6 +63,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         # write keywords to attributes
         attr = self.synsat
+        attr.atlasses_loaded = False
         attr.kwargs = synsat_kwargs
 
         # locate itself
@@ -78,6 +79,9 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         # set default options
         self.set_default_options(**synsat_kwargs)
+
+        # init field
+        self.synsat.chunked_result = []
 
         # load msg
         self.load_msg(**synsat_kwargs)
@@ -245,6 +249,14 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         attr = self.synsat
 
+        if (
+            attr.atlasses_loaded
+            and attr.atlasses_initialied_for_nprofiles == attr.nprofiles
+        ):
+
+            print(f"... [synsat] atlasses are already loaded")
+            return
+
         if not attr.nprofiles is None:
             # WARNING: this assumes that first month is representative for all profiles
             synsat_month = self.Profiles.DateTimes[0, 1]
@@ -266,12 +278,12 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             brdfAtlas.IncSea = False  # Do not use BRDF atlas for sea surface types
 
             # Set up the surface emissivity/reflectance arrays and associate with the Rttov objects
-        
+
         if attr.rttov_version >= 13.2:
             nemis_classes = 5
         else:
             nemis_classes = 4
-        
+
         surfemisrefl_seviri = np.zeros(
             (nemis_classes, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
         )
@@ -296,6 +308,10 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             # If there was an error the emissivities/BRDFs will not have been modified so it
             # is OK to continue and call RTTOV with calcemis/calcrefl set to TRUE everywhere
             sys.stderr.write("Error calling atlas: {!s}".format(e))
+
+        attr.atlasses_loaded = True
+        attr.atlasses_initialied_for_nprofiles = attr.nprofiles
+
         return
 
     def run_workflow(self, **kwargs):
@@ -334,7 +350,7 @@ class SynSat(SynSatBase):
 
     def load(self, inputfile_or_data, **kwargs):
 
-        model = kwargs.get('model', 'era')
+        model = kwargs.get("model", "auto")
 
         # use data handler to load data
         sdat = data_handler.DataHandler(model=model)
@@ -353,17 +369,59 @@ class SynSat(SynSatBase):
             sdat.input_data = inputfile_or_data
 
         self.synsat.data_handler = sdat
-        profs = sdat.data2profile()
+
+        return
+
+    def chunked_run(self, **kwargs):
+
+        # transform input data into profiles
+        sdat = self.synsat.data_handler
+
+        profs = sdat.data2profile(**kwargs)
 
         # forward profiles to RTTOV
         self.Profiles = profs
         self.synsat.nprofiles = profs.Nprofiles
 
-        return
-
-    def run(self):
-
+        # and run workflow
         self.run_workflow()
+
+        self.synsat.chunked_result += [self.BtRefl]
+
+
+    def run(self, **kwargs):
+
+        if "chunked" not in kwargs:
+            isel = {"profile": slice(0, None)}
+            self.chunked_run(isel=isel)
+
+        else:
+            sdat = self.synsat.data_handler
+
+            ntot = sdat.total_number_of_profiles
+            nprof_per_call = self.Options.NprofsPerCall
+
+            if np.mod(ntot, nprof_per_call) == 0:
+                residual = 0
+            else:
+                residual = 1
+
+            nchunks = ntot // nprof_per_call + residual
+
+            for ichunks in range(nchunks):
+
+                prof0 = ichunks * nprof_per_call
+                prof1 = (ichunks + 1) * nprof_per_call
+
+                if prof1 >= ntot:
+                    prof1 = None
+                isel = {"profile": slice(prof0, prof1)}
+
+                print("... [synsat] running chunk", isel)
+                self.chunked_run(isel=isel)
+
+        self.synsat.result = np.row_stack( self.synsat.chunked_result )
+
 
     def extract_output(self):
 
@@ -381,7 +439,7 @@ class SynSat(SynSatBase):
         indat = attr.data_handler.input_data_as_profile
         alldat = indat.assign_coords({"channel": channels})
 
-        btrefl = xr.DataArray(data=self.BtRefl, coords=[alldat.profile, alldat.channel])
+        btrefl = xr.DataArray(data=self.synsat.result, coords=[alldat.profile, alldat.channel])
         alldat["btrefl"] = btrefl
 
         btrefl = alldat["btrefl"].unstack()
@@ -406,11 +464,11 @@ class SynSat(SynSatBase):
         attr.output = synsat
 
         # try to write global attrs
-        try:
+        if True: #try:
             synsat.attrs = output.prepare_global_attrs()
             synsat.attrs["input_filename"] = attr.input_filename
 
-        except:
+        else: #except:
             print("... [synsat]: WARNING: fail to write global attributes")
 
         self.synsat.output_data = synsat

@@ -68,6 +68,7 @@ def icon_variable_mapping(
         "qv": "q",
         "qc": "clwc",
         "qi": "ciwc",
+        "qs": "cswc",
         "t_s": "SKT",
         "t_2m": "T2M",
         "pres_sfc": "SP",

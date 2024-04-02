@@ -88,33 +88,31 @@ def lonlat2azizen(lon, lat):
 ######################################################################
 ######################################################################
 
-def autodetect_model_by_filename( fname ):
+
+def autodetect_model_by_filename(fname):
 
     model = None
 
-    era_keys = ['era']
+    era_keys = ["era"]
 
     for k in era_keys:
         if k in fname:
             model = "era"
 
-    icon_keys = ['icon', 'ifces']
+    icon_keys = ["icon", "ifces"]
 
     for k in icon_keys:
         if k in fname:
             model = "icon"
 
-    
     if model is None:
-        raise ValueError( 'Model autodetect failed!' ) 
-
+        raise ValueError("Model autodetect failed!")
 
     return model
 
+
 ######################################################################
 ######################################################################
-
-
 
 
 class DataHandler(object):
@@ -124,37 +122,40 @@ class DataHandler(object):
 
         return
 
-    def open_data(
-        self,
-        filename,
-        **kwargs
-    ):
-        isel = kwargs.pop('isel', None)
+    def open_data(self, filename, **kwargs):
+        isel = kwargs.pop("isel", None)
 
-        if self.model == 'auto':
-            model = autodetect_model_by_filename( filename )
+        if self.model == "auto":
+            model = autodetect_model_by_filename(filename)
         else:
             model = self.model
 
         if model == "era":
 
-#            from input_era import open_era
+            #            from input_era import open_era
 
             indat = input_era.open_era(filename, **kwargs)
 
         elif model == "icon":
-#            from input_icon import open_icon
+            #            from input_icon import open_icon
 
             indat = input_icon.open_icon(filename, **kwargs)
 
         if isel is not None:
-            self.input_data = indat.isel( **isel )
+            self.input_data = indat.isel(**isel)
         else:
             self.input_data = indat
 
+        stacked_input_data = self.input_data.stack(profile=["time", "lon", "lat"])
+        total_number_of_profiles = len(stacked_input_data.profile)
+
+        self.input_data_as_profile = stacked_input_data
+
+        self.total_number_of_profiles = total_number_of_profiles
+
         return
 
-    def data2profile(self):
+    def data2profile(self, **kwargs):
         """
         TODO
         ====
@@ -163,10 +164,22 @@ class DataHandler(object):
         - time
         """
 
-        # stack all together into profiles
-        sdat = self.input_data
-        profs = sdat.stack(profile=["time", "lon", "lat"])
-        self.input_data_as_profile = profs
+        # arguments handling
+        if "synsat_snow_factor" in kwargs:
+            use_snow_factor = True
+            snow_factor = kwargs["synsat_snow_factor"]
+        else:
+            use_snow_factor = False
+
+        # get all stacked data
+        stacked_input_data = self.input_data_as_profile
+
+        if "isel" in kwargs:
+            isel = kwargs["isel"]
+        else:
+            isel = {"profile": slice(0, None)}
+
+        profs = stacked_input_data.isel(**isel)
 
         # initialize profile
         nlevels = profs.dims["lev"]
@@ -215,10 +228,18 @@ class DataHandler(object):
         # myProfiles.Ngases = 4
         q = profs["q"].data.T
         qc = profs["clwc"].data.T
+
         qi = profs["ciwc"].data.T
+
+        if use_snow_factor:
+            qs = profs["cswc"].data.T
+            q_frozen = qi + snow_factor * qs
+        else:
+            q_frozen = qi
+
         cc = profs["cc"].data.T
 
-        gases = np.stack([q, cc, qc, qi])
+        gases = np.stack([q, cc, qc, q_frozen])
         myProfiles.MmrCldAer = 1
         myProfiles.Gases = gases
         myProfiles.GasId = np.array([1, 20, 21, 30])

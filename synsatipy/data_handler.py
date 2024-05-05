@@ -170,7 +170,6 @@ class DataHandler(object):
     def data2profile(self, **kwargs):
         """
         TODO
-        ====
         - geometry
         - q2m
         - time

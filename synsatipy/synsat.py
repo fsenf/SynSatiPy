@@ -393,7 +393,7 @@ class SynSat(SynSatBase):
 
         if "chunked" not in kwargs:
             isel = {"profile": slice(0, None)}
-            self.chunked_run(isel=isel)
+            self.chunked_run(isel=isel, **kwargs)
 
         else:
             sdat = self.synsat.data_handler
@@ -418,7 +418,7 @@ class SynSat(SynSatBase):
                 isel = {"profile": slice(prof0, prof1)}
 
                 print("... [synsat] running chunk", isel)
-                self.chunked_run(isel=isel)
+                self.chunked_run(isel=isel, **kwargs)
 
         self.synsat.result = np.row_stack( self.synsat.chunked_result )
 

@@ -10,6 +10,7 @@ from synsatipy.starter import pyrttov
 
 import synsatipy.input_icon as input_icon
 import synsatipy.input_era as input_era
+import synsatipy.input_nextgems as input_nextgems
 
 
 ######################################################################
@@ -82,6 +83,9 @@ def lonlat2azizen(lon, lat):
     # zenith angle .......................................................
     zen = pi - gamma
 
+    np.nan_to_num(azi, copy=False)
+    np.nan_to_num(zen, copy=False)
+    
     return np.rad2deg(azi), np.rad2deg(zen)
 
 
@@ -123,7 +127,9 @@ class DataHandler(object):
         return
 
     def open_data(self, filename, **kwargs):
+
         isel = kwargs.pop("isel", None)
+        profile_dimensions = kwargs.pop("profile_dimensions", ["time", "lon", "lat"])
 
         if self.model == "auto":
             model = autodetect_model_by_filename(filename)
@@ -141,12 +147,18 @@ class DataHandler(object):
 
             indat = input_icon.open_icon(filename, **kwargs)
 
+        elif model == "nextgems":
+            #            from input_icon import open_icon
+
+            catname = filename
+            indat = input_nextgems.open_nextgems(catname, **kwargs)
+
         if isel is not None:
             self.input_data = indat.isel(**isel)
         else:
             self.input_data = indat
 
-        stacked_input_data = self.input_data.stack(profile=["time", "lon", "lat"])
+        stacked_input_data = self.input_data.stack(profile=profile_dimensions)
         total_number_of_profiles = len(stacked_input_data.profile)
 
         self.input_data_as_profile = stacked_input_data
@@ -235,6 +247,7 @@ class DataHandler(object):
         qi = profs["ciwc"].data.T
 
         if use_snow_factor:
+            print("... [synsat]: applying snow factor,", snow_factor)
             qs = profs["cswc"].data.T
             q_frozen = qi + snow_factor * qs
         else:

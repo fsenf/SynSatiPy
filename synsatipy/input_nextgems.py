@@ -9,6 +9,17 @@ import healpy
 import intake
 
 
+def open_ngdataset( cat_path, **kwargs ):
+
+    cat = intake.open_catalog(cat_path)
+
+    dset = (
+        cat.ngc4008a(chunks="auto", zoom=9, time="PT15M").to_dask().pipe(attach_coords)
+    )
+
+    return dset
+
+
 def get_index_for_regional_extend(dset, extend):
 
     lon_extend = extend[0:2]
@@ -26,11 +37,7 @@ def get_index_for_regional_extend(dset, extend):
 
 def input_regional_nextgems(cat_path, extend=None, time=None, **kwargs):
 
-    cat = intake.open_catalog(cat_path)
-
-    dset = (
-        cat.ngc4008a(chunks="auto", zoom=9, time="PT15M").to_dask().pipe(attach_coords)
-    )
+    dset = open_ngdataset( cat_path, **kwargs)
 
     if extend is not None:
         regional_index = get_index_for_regional_extend(dset, extend)

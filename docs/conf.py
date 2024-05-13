@@ -57,6 +57,10 @@ collapse_navigation = False
 autodoc_mock_imports = [
     #    "numpy",
     "scipy",
+    "pandas",
+    "easygems",
+    "healpy",
+    "intake",
     "matplotlib",
     "xarray",
     "cartopy",

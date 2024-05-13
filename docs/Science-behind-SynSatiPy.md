@@ -1,6 +1,6 @@
 # Science behind SynSatiPy
 
-Earlier version of the SynSat interface were utilized for scientific studies with various research targets, for instance to
+Earlier versions of the SynSat interface were utilized for scientific studies with various research targets, for instance to
 
 - assess the realism of cloud characteristics in super high-resolution ICON simulations over Germany (https://doi.org/10.1002/qj.2947)
 

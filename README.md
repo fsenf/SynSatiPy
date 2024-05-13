@@ -4,9 +4,9 @@
 
 - is a python package for atmospheric research (see [Science behind SynSatiPy](docs/Science-behind-SynSatiPy.md))
 
-- allows to derive satellite images from weather forecasts or from climate simulation
+- allows to derive satellite images from weather forecasts or from climate simulations
 
-SynSatiPy is a Python interface to the RTTOV software that help to input model data (e.g. from IFS or from ICON) and loads emissivity catalogues and sensor specific files.
+SynSatiPy is a Python interface to the RTTOV software that helps to input model data (e.g. from IFS or from ICON) and loads emissivity catalogues and sensor specific files.
 
 ## Getting Started
 
@@ -20,10 +20,10 @@ SynSatiPy can be installed via `pip`. It is recommended to install the SynSatiPy
 - [SynSatiPy Installation on DKRZ Levante](docs/Installation_on_Levante.md)
 
 ### Using SynSatiPy
-SynSatiPy can be import inside python scripts or jupyter notebooks. Examples are provided in the folder [Example Notebooks](docs/examples/) 
+SynSatiPy can be imported inside python scripts or jupyter notebooks. Examples are provided in the folder [Example Notebooks](docs/examples/) 
 
 ### User Guide
-Further documentation is provided here: RTD (TODO).
+Further documentation is provided here: https://synsatipy.readthedocs.io.
 
 ## Contributing
 Please feel invited to contributed to the SynSatiPy python package (via pull requests). Possible extension are (not exclusive):

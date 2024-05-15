@@ -112,12 +112,15 @@ def open_nextgems(cat_path, name_remapping=True, **kwargs):
 
     dset["t_2m"] = dset["ta"].isel(level_full=-1)
     dset["pres_sfc"] = dset["pfull"].isel(level_full=-1)
-    dset["clc"] = xr.ones_like(dset["clw"])
+
 
     q_tot = dset["clw"] + dset["cli"] + dset["qs"]
     q_tot_thresh = 1e-9
 
-    dset["clc"][:] = np.where(q_tot < q_tot_thresh, 0, 1)
+    O =  xr.zeros_like(dset["clw"])
+    I =  xr.ones_like(dset["clw"])
+
+    dset["clc"] = xr.where(q_tot < q_tot_thresh, O, I)
 
     dset = dset.transpose("time", "cell", "level_full", "level_half")
 

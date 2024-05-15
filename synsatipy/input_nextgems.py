@@ -1,4 +1,3 @@
-
 # standard packages
 import numpy as np
 import xarray as xr
@@ -8,16 +7,33 @@ from easygems.healpix import attach_coords
 import healpy
 import intake
 
+from synsatipy.utils.spacetools import lonlat2azizen
 
-def open_ngdataset( cat_path, **kwargs ):
+
+def open_ngdataset(cat_path, **kwargs):
+
+    zoom = kwargs.get("zoom", 9)
 
     cat = intake.open_catalog(cat_path)
 
     dset = (
-        cat.ngc4008a(chunks="auto", zoom=9, time="PT15M").to_dask().pipe(attach_coords)
+        cat.ngc4008a(chunks="auto", zoom=zoom, time="PT15M")
+        .to_dask()
+        .pipe(attach_coords)
     )
 
     return dset
+
+
+def get_index_for_zenith_mask(dset, max_zenith=80):
+
+    azi, zen = lonlat2azizen(dset["lon"], dset["lat"])
+
+    zen_mask = zen <= max_zenith
+
+    regional_index = np.where(zen_mask)[0]
+
+    return regional_index
 
 
 def get_index_for_regional_extend(dset, extend):
@@ -37,7 +53,7 @@ def get_index_for_regional_extend(dset, extend):
 
 def input_regional_nextgems(cat_path, extend=None, time=None, **kwargs):
 
-    dset = open_ngdataset( cat_path, **kwargs)
+    dset = open_ngdataset(cat_path, **kwargs)
 
     if extend is not None:
         regional_index = get_index_for_regional_extend(dset, extend)
@@ -46,7 +62,11 @@ def input_regional_nextgems(cat_path, extend=None, time=None, **kwargs):
         dset_reg = dset  # be careful here
 
     if time is not None:
-        dset_reg_sub = dset_reg.sel(time=[time,])
+        dset_reg_sub = dset_reg.sel(
+            time=[
+                time,
+            ]
+        )
 
     else:
         dset_reg_sub = dset
@@ -99,7 +119,7 @@ def open_nextgems(cat_path, name_remapping=True, **kwargs):
 
     dset["clc"][:] = np.where(q_tot < q_tot_thresh, 0, 1)
 
-    dset = dset.transpose('time', 'cell', 'level_full', 'level_half')
+    dset = dset.transpose("time", "cell", "level_full", "level_half")
 
     if name_remapping:
         return nextgems_variable_mapping(dset)

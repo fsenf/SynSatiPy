@@ -180,8 +180,8 @@ class DataHandler(object):
 
         sunazi, sunzen = zeros[:, :1], zeros[:, :1]
 
-        myProfiles.Angles = np.vstack([zen, azi, 0 * zen, 0 * azi]).T
-        myProfiles.SurfGeom = np.vstack([lon, lat, 0 * lat]).T
+        myProfiles.Angles = np.vstack([zen, azi, 0 * zen, 0 * azi]).T    # (zenangle, azangle, sunzenangle, sunazangle) 
+        myProfiles.SurfGeom = np.vstack([lat, lon,  0 * lat]).T           # (latitude, longitude, elevation) for each profile.
         myProfiles.SurfType = zeros[:, :2]
 
         skt = np.expand_dims(profs["SKT"], axis=1)

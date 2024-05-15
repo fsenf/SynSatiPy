@@ -9,6 +9,7 @@ from synsatipy.synsat_example_data import get_example_data
     [
         ("era01"),
         ("icon01"),
+        ("icon02"),
     ],
 )
 def test_input_of_example_data(example_name):

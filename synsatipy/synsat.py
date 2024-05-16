@@ -417,7 +417,7 @@ class SynSat(SynSatBase):
                     prof1 = None
                 isel = {"profile": slice(prof0, prof1)}
 
-                print("... [synsat] running chunk", isel)
+                print(f"... [synsat] running {ichunks}/{nchunks} chunk with", isel)
                 self.chunked_run(isel=isel, **kwargs)
 
         self.synsat.result = np.row_stack( self.synsat.chunked_result )

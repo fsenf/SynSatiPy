@@ -17,7 +17,7 @@ def open_ngdataset(cat_path, **kwargs):
     cat = intake.open_catalog(cat_path)
 
     dset = (
-        cat.ngc4008a(chunks="auto", zoom=zoom, time="PT15M")
+        cat.ICON.ngc4008a(chunks="auto", zoom=zoom, time="PT15M")
         .to_dask()
         .pipe(attach_coords)
     )
@@ -51,13 +51,20 @@ def get_index_for_regional_extend(dset, extend):
     return regional_index
 
 
-def input_regional_nextgems(cat_path, extend=None, time=None, **kwargs):
+def input_regional_nextgems(
+    cat_path, mask_type=None, extend=None, time=None, max_zenith=80, **kwargs
+):
 
     dset = open_ngdataset(cat_path, **kwargs)
 
-    if extend is not None:
+    if mask_type == "regional" and extend is not None:
         regional_index = get_index_for_regional_extend(dset, extend)
         dset_reg = dset.isel(cell=regional_index)
+
+    elif mask_type == "zenith":
+        regional_index = get_index_for_zenith_mask(dset, max_zenith=max_zenith)
+        dset_reg = dset.isel(cell=regional_index)
+
     else:
         dset_reg = dset  # be careful here
 
@@ -113,12 +120,11 @@ def open_nextgems(cat_path, name_remapping=True, **kwargs):
     dset["t_2m"] = dset["ta"].isel(level_full=-1)
     dset["pres_sfc"] = dset["pfull"].isel(level_full=-1)
 
-
     q_tot = dset["clw"] + dset["cli"] + dset["qs"]
     q_tot_thresh = 1e-9
 
-    O =  xr.zeros_like(dset["clw"])
-    I =  xr.ones_like(dset["clw"])
+    O = xr.zeros_like(dset["clw"])
+    I = xr.ones_like(dset["clw"])
 
     dset["clc"] = xr.where(q_tot < q_tot_thresh, O, I)
 

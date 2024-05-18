@@ -34,7 +34,7 @@ def enhanced_wv62_cmap(vmin=200.0, vmed1=230.0, vmed2=240.0, vmax=260.0):
     #    colors1 = pl.cm.copper(np.linspace(0., 1., ncopp))
     colors1 = plt.cm.afmhot(np.linspace(0, 1.0, ncopp))
     colors2 = plt.cm.gray_r(np.linspace(0.0, 1.0, ngray))
-    colors3 = plt.cm.jet_r(np.linspace(0, 1.0, ncol))
+    colors3 = plt.cm.Spectral(np.linspace(0, 1.0, ncol))
 
     # combine them and build a new colormap
     colors = np.vstack((colors3, colors2, colors1))

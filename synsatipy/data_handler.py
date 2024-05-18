@@ -163,12 +163,15 @@ class DataHandler(object):
         zeros = np.zeros_like(profs["p"].data.T)
         ones = zeros[:, :1] + 1
 
+        
         # fill profile
         q = profs["q"].data.T
+        Temp =  profs["t"].data.T
+
+        Temp = np.clip(Temp, 100, 400) 
+
         myProfiles.P = profs["p"].data.T * 1e-2  # in hPa
-        myProfiles.T = profs[
-            "t"
-        ].data.T  # gas_units = 1 => kg/kg over moist air (default)
+        myProfiles.T = Temp # gas_units = 1 => kg/kg over moist air (default)
         myProfiles.Q = q
 
         # get satellite angles

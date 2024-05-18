@@ -17,7 +17,7 @@ def open_ngdataset(cat_path, **kwargs):
     cat = intake.open_catalog(cat_path)
 
     dset = (
-        cat.ICON.ngc4008a(chunks="auto", zoom=zoom, time="PT15M")
+        cat.ICON.ngc4008a(zoom=zoom, time="PT15M")  # chunks="auto",
         .to_dask()
         .pipe(attach_coords)
     )

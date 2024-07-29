@@ -35,15 +35,15 @@ def lonlat2azizen(lon, lat):
     pi = np.pi
     
 # from degree to radiant .............................................
-    lon, lat = np.deg2rad(lon), np.deg2rad(lat)
+    lam, phi = np.deg2rad(lon), np.deg2rad(lat)
     
 
 # calculate angle on great circle between pixel and (0,0) ............
-    delta = np.arccos( np.cos(lat) * np.cos (lon) )
+    delta = np.arccos( np.cos(phi) * np.cos (lam) )
 
 
 # azimuth angle ......................................................
-    azi = np.arccos( np.sin(lat) / np.sin(delta))
+    azi = np.arccos( np.sin(phi) / np.sin(delta))
     
 
 # missing side of triangle ...........................................
@@ -55,7 +55,9 @@ def lonlat2azizen(lon, lat):
     gamma = pi - np.arcsin( H / D * np.sin(delta) )
 
 # zenith angle .......................................................
-    zen = pi - gamma
+    #    zen = pi - gamma
+    zen = np.where( np.cos(delta) - R/H < 0, pi/2, pi - gamma)
+
     
     np.nan_to_num(azi, copy=False)
     np.nan_to_num(zen, copy=False)

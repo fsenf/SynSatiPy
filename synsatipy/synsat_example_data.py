@@ -3,6 +3,31 @@ import os, sys
 
 def get_example_data(example_name, stored_on_server=True):
 
+    """
+    Get the example data.
+
+    Parameters
+    ----------
+    example_name : str
+        The name of the example data.
+        Possible values are "era01", "icon01", "icon02".
+
+    stored_on_server : bool, optional
+        If the data is stored on the server. Default is True.
+        Check the server name and set this parameter False if the server is unknown.
+        Possible servers are "tropos", "dkrz".
+
+    Returns
+    -------
+    fname : str
+        The file name of the example data
+
+    Notes
+    -----
+    The example data is stored on the server.
+    """
+    
+
     if stored_on_server:
         hostname = os.uname()[1]
 

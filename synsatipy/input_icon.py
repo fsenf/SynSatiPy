@@ -11,6 +11,25 @@ import synsatipy.utils.timetools as timetools
 
 def icon_name_analyzer(icon_name):
 
+    """
+    Analyze the ICON name and return the properties.
+
+    Parameters
+    ----------
+    icon_name : str
+        The name of the ICON file.
+
+    Returns
+    -------
+    icon_name_props : dict
+        The properties of the ICON file.
+
+    Notes
+    -----
+    The ICON name assumed to be in the form of
+    {data_type}_{variable_stack}_{domain}_{level_type}_{time_str}_{postproc_suffix}.nc.
+    """
+
     fullpath = os.path.dirname(icon_name)
     basename = os.path.basename(icon_name)
 
@@ -43,6 +62,28 @@ def icon_name_analyzer(icon_name):
 
 def icon_name_creator(icon_name_props):
 
+    """
+    Create the ICON name.
+
+    Parameters
+    ----------
+    icon_name_props : dict
+        The properties of the ICON file.
+        -  "flavor" : str
+           "flavor" of the ICON file. Default is "ifces2".
+   
+
+    Returns
+    -------
+    icon_name : str
+        The ICON name.
+
+    Notes
+    -----
+    The ICON name assumed to be in the form of
+    {data_type}_{variable_stack}_{domain}_{level_type}_{time_str}_{postproc_suffix}.nc.
+    """
+
     flavor = icon_name_props["flavor"]
 
     if flavor == "ifces2":
@@ -57,6 +98,21 @@ def icon_name_creator(icon_name_props):
 def icon_variable_mapping(
     dset,
 ):
+    
+    """
+    Rename ICON variables to ERA5 variables.
+
+    Parameters
+    ----------
+    dset : xarray.Dataset
+        The ICON dataset.
+
+    Returns
+    -------
+    d_renamed : xarray.Dataset
+        The renamed ICON dataset.
+
+    """
 
     d_renamed = xr.Dataset()
 
@@ -87,6 +143,28 @@ def icon_variable_mapping(
 
 
 def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True):
+
+    """
+    Open ICON dataset.
+
+    Parameters
+    ----------
+    icon3d_name : str
+        The name of the ICON 3D file.
+
+    qmin : float, optional
+        Minimum value of qv. Default is 1.1e-9.
+        Values below this threshold are clipped.
+    
+    name_remapping : bool, optional
+        Whether to remap the variable names. Default is True.
+    
+    Returns
+    -------
+    icon : xarray.Dataset
+        The ICON dataset.
+
+    """
 
     input_options = {"chunks": "auto"}
 

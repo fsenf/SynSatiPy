@@ -8,11 +8,14 @@ def test_synsat_on_test_profile(accuracy=1.0):
 
     Parameters
     ----------
-    accuracy :
-         (Default value = 1.0)
+    accuracy : float, optional
+        Maximum allowed difference between expected and calculated values.
+        Default is 1.0.
 
+        
     Returns
     -------
+    None
 
 
     Notes

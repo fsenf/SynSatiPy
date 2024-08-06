@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Input module for ERA data."""
+
 import os, sys
 
 import numpy as np
@@ -7,7 +9,25 @@ import xarray as xr
 
 
 def era_name_analyzer(era_name):
+    """
+    Analyze the ERA name and return the properties.
 
+    Parameters
+    ----------
+    era_name : str
+        The name of the ERA file.
+
+    Returns
+    -------
+    era_name_props : dict
+        The properties of the ERA file.
+
+    Notes
+    -----
+    The ERA name assumed to be in the form of 
+    {modelname}-{data_type}-{region}-{year}-{month}-{day}.nc.
+
+    """
     fullpath = os.path.dirname(era_name)
     basename = os.path.basename(era_name)
 
@@ -27,7 +47,23 @@ def era_name_analyzer(era_name):
 
 
 def era_name_converter(era_name, mode="3d_to_2d"):
+    """
+    Convert the ERA name.
 
+    Parameters
+    ----------
+    era_name : str
+        The name of the ERA file.
+
+    mode : str, optional
+        The mode of the conversion. Default is "3d_to_2d".
+        - "3d_to_2d" : convert 3d to 2d.
+    
+    Returns
+    -------
+    era_name_converted : str
+        The converted ERA name.
+    """
     if mode == "3d_to_2d":
 
         era_name_props = era_name_analyzer(era_name)
@@ -42,7 +78,29 @@ def era_name_converter(era_name, mode="3d_to_2d"):
 
 
 def open_era(era3d_name, add_pressure=True, qmin=1.1e-9):
+    """
+    Open the ERA data.
 
+    Parameters
+    ----------
+    era3d_name : str
+        The name of the ERA 3D file.
+
+    add_pressure : bool, optional
+        Whether to add pressure. Default is True.
+    
+    qmin : float, optional
+        The minimum value of q. 
+        Values below this threshold will be clipped.
+        Default is 1.1e-9.
+
+        
+    Returns
+    -------
+    era : xarray.Dataset
+        The opened ERA dataset.
+    
+    """
     # open datasets
     era3d = xr.open_dataset(era3d_name)
 
@@ -63,7 +121,25 @@ def open_era(era3d_name, add_pressure=True, qmin=1.1e-9):
 
 
 def calc_pressure(era):
+    """
+    Calculate pressure from ERA data.
 
+    Parameters
+    ----------
+    era : xarray.Dataset
+        The ERA dataset.
+    
+    Returns
+    -------
+    p : xarray.DataArray
+        The calculated pressure.
+
+    Notes
+    -----
+    The pressure is calculated as follows:
+    p = B * ps + A,
+    where p is the pressure, ps is the surface pressure,
+    """
     # calculate pressure
     A = era["hyam"]
     B = era["hybm"]

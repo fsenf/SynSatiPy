@@ -56,6 +56,25 @@ def dt2cal(dt):
 
 
 def autodetect_model_by_filename(fname):
+    """
+    Autodetects the model based on the filename.
+
+    Parameters
+    ----------
+    fname : str
+        The filename to check for model keywords.
+
+    Returns
+    -------
+    model : str
+        The detected model name.
+
+    Raises
+    ------
+    ValueError
+        If the model cannot be autodetected.
+    """
+
 
     model = None
 
@@ -82,6 +101,23 @@ def autodetect_model_by_filename(fname):
 
 
 class DataHandler(object):
+    """
+    Handles data operations for different models.
+
+    Parameters
+    ----------
+    model : str, optional
+        The model to use. Default is "auto".
+        model can be "era", "icon", "nextgems" or "auto".
+        "auto" will try to autodetect the model based on the filename.
+    
+    return_profile : bool, optional
+        Whether to return profile data. Default is True.
+
+    **kwargs : dict
+        Additional keyword arguments.
+    """
+
     def __init__(self, model="auto", return_profile=True, **kwargs):
 
         self.model = model
@@ -89,7 +125,21 @@ class DataHandler(object):
         return
 
     def open_data(self, filename, **kwargs):
+        """
+        Opens data from a file.
 
+        Parameters
+        ----------
+        filename : str
+            The name of the file to open.
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        data : object
+            The opened data.
+        """
         isel = kwargs.pop("isel", None)
         profile_dimensions = kwargs.pop("profile_dimensions", ["time", "lon", "lat"])
 
@@ -131,7 +181,34 @@ class DataHandler(object):
 
     def data2profile(self, **kwargs):
         """
-        TODO
+        Converts data to a profile object.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        myProfiles : pyrttov.Profiles
+            The profile object.
+        
+        Notes
+        - The following variables are expected in the input_data:
+        ------------------------------------------------------------------
+        - p
+        - t
+        - q
+        - lon
+        - lat
+        - SKT
+        - SP
+        - T2M
+        - clwc
+        - ciwc
+        - cc
+        - The following aspects need to be considered:
+        ------------------------------------------------------------------
         - geometry
         - q2m
         - time

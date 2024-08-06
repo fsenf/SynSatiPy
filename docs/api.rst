@@ -31,6 +31,13 @@ synsatipy Input modules
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: synsatipy.input_nextgems
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+
 
 synsatipy Output modules
 ------------------------
@@ -48,5 +55,17 @@ synsatipy Utils modules
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. automodule:: synsatipy.utils.colormaps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: synsatipy.utils.spacetools
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 
 

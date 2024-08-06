@@ -29,7 +29,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
     The is a child class of pyrttov.Rttov.
 
     Notes
-    =====
+    -----
+
 
     General Notes on the Workflow:
     1. Options need to be provided
@@ -37,12 +38,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
     3. Data needs to be read
     4. Atlasses are loaded (depend on time coordinate in data)
     5. RTTOV is called
+    
 
-    Parameters
-    ----------
-
-    Returns
-    -------
 
     """
 
@@ -90,14 +87,18 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
     def set_default_options(self, **synsat_kwargs):
         """
+        Sets default options for the RTTOV wrapper.
 
+        
         Parameters
         ----------
-        **synsat_kwargs :
+        **synsat_kwargs : dict
+            Additional keyword arguments.
 
 
         Returns
         -------
+        None
 
         """
 
@@ -112,16 +113,19 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
     def load_msg(self, synsat_msg_number=3, **synsat_kwargs):
         """
+        Loads configuration specific for the MSG-SEVIRI instrument.
 
         Parameters
         ----------
-        synsat_msg_number :
-             (Default value = 3)
-        **synsat_kwargs :
+        synsat_msg_number : int
+            MSG number. (Default value = 3)
+        **synsat_kwargs : dict
+            Additional keyword arguments.
 
 
         Returns
         -------
+        None
 
         """
 
@@ -225,16 +229,19 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
     def load_atlasses(self, synsat_default_month=8, **kwargs):
         """
+        Load the emissivity and BRDF atlases.
 
         Parameters
         ----------
-        synsat_default_month :
-             (Default value = 8)
-        **kwargs :
-
+        synsat_default_month : int
+            Month to use for the emissivity and BRDF atlases.
+           (Default value = 8)
+        **kwargs : dict
+            Additional keyword arguments.
 
         Returns
         -------
+        None
 
         """
 
@@ -316,16 +323,18 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
     def run_workflow(self, **kwargs):
         """
+        Run the full RTTOV workflow. This includes loading the atlasses, running RTTOV 
+        and extracting the output.
 
         Parameters
         ----------
-        test :
-             (Default value = True)
-        **kwargs :
+        **kwargs : dict
+            Additional keyword arguments
 
 
         Returns
         -------
+        None
 
         """
 
@@ -343,12 +352,46 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
 
 class SynSat(SynSatBase):
+    """ 
+    SynSat class for calculating MSG Synsats.
+
+    The is a child class of SynSatBase.
+
+    Notes
+    -----
+    This class is the main class for calculating MSG Synsats.
+
+    Parameters
+    ----------
+    *args : list
+        List of arguments passed to the parent class.
+
+    **kwargs : dict
+        Additional keyword arguments passed to the parent class.
+    """
+
     def __init__(self, *args, **kwargs):
 
         # inheritate all important methods & attributes
         super().__init__(*args, **kwargs)
 
+    
     def load(self, inputfile_or_data, **kwargs):
+        """
+        Load data from file or dataset.
+
+        Parameters
+        ----------
+        inputfile_or_data : str or xr.Dataset
+            The input file or dataset.
+
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
 
         model = kwargs.get("model", "auto")
 
@@ -373,6 +416,18 @@ class SynSat(SynSatBase):
         return
 
     def chunked_run(self, **kwargs):
+        """
+        Runs a small chunk of the RTTOV workflow.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
 
         # transform input data into profiles
         sdat = self.synsat.data_handler
@@ -390,6 +445,19 @@ class SynSat(SynSatBase):
 
 
     def run(self, **kwargs):
+        """
+        Run the complete RTTOV workflow. This is a wrapper for the chunked_run method.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+
+        """
 
         if "chunked" not in kwargs:
             isel = {"profile": slice(0, None)}
@@ -424,6 +492,21 @@ class SynSat(SynSatBase):
 
 
     def extract_output(self):
+
+        """
+        Extracts the output data from the RTTOV variables and prepares it for saving. 
+        Output data is stored in the synsat.output attribute and have the following structure:
+        
+        - The output data is stored in a xarray dataset.
+        - The dataset contains the brightness temperatures for all channels.
+        
+        Returns
+        -------
+        synsat : xarray.Dataset
+            The output data.
+        
+
+        """
 
         attr = self.synsat
 
@@ -476,6 +559,19 @@ class SynSat(SynSatBase):
         return synsat
 
     def save(self, output_filename):
+        """
+        Save the output data to a netcdf file.
+
+        Parameters
+        ----------
+        output_filename : str
+            The output filename.
+
+        Returns
+        -------
+        None
+
+        """
 
         out = self.extract_output()
 

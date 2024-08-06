@@ -5,7 +5,11 @@ from synsatipy.synsat import SynSat
 
 
 def test_synsat4nextgems():
-    cat_path = "/work/bm1235/k203123/nextgems_prefinal/experiments/ngc4008a/outdata/ngc4008a.yaml"
+
+    """
+    Test the SynSat class with the nextGEMS data.
+    """
+    cat_path = "https://data.nextgems-h2020.eu/catalog.yaml"
     medi_extend = [-8, 45, 30, 45]
     time = "2021-07-01T0030"
     zoom = 5

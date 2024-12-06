@@ -1,0 +1,7 @@
+docs/examples/.ipynb_checkpoints
+docs/examples/.tmp
+docs/examples/Data
+nbooks
+.vscode
+*.pyc
+*.egg-info

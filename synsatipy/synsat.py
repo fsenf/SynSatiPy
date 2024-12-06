@@ -38,7 +38,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
     3. Data needs to be read
     4. Atlasses are loaded (depend on time coordinate in data)
     5. RTTOV is called
-    
+
 
 
     """
@@ -89,7 +89,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         """
         Sets default options for the RTTOV wrapper.
 
-        
+
         Parameters
         ----------
         **synsat_kwargs : dict
@@ -135,7 +135,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "vis006",
             "vis008",
             "nir016",
-            "ir039" "wv062",
+            "ir039",
+            "wv062",
             "wv073",
             "ir087",
             "ir097",
@@ -256,14 +257,6 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         attr = self.synsat
 
-        if (
-            attr.atlasses_loaded
-            and attr.atlasses_initialied_for_nprofiles == attr.nprofiles
-        ):
-
-            print(f"... [synsat] atlasses are already loaded")
-            return
-
         if not attr.nprofiles is None:
             # WARNING: this assumes that first month is representative for all profiles
             synsat_month = self.Profiles.DateTimes[0, 1]
@@ -323,7 +316,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
     def run_workflow(self, **kwargs):
         """
-        Run the full RTTOV workflow. This includes loading the atlasses, running RTTOV 
+        Run the full RTTOV workflow. This includes loading the atlasses, running RTTOV
         and extracting the output.
 
         Parameters
@@ -352,7 +345,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
 
 class SynSat(SynSatBase):
-    """ 
+    """
     SynSat class for calculating MSG Synsats.
 
     The is a child class of SynSatBase.
@@ -375,7 +368,6 @@ class SynSat(SynSatBase):
         # inheritate all important methods & attributes
         super().__init__(*args, **kwargs)
 
-    
     def load(self, inputfile_or_data, **kwargs):
         """
         Load data from file or dataset.
@@ -445,7 +437,6 @@ class SynSat(SynSatBase):
 
         self.synsat.chunked_result += [self.BtRefl]
 
-
     def run(self, **kwargs):
         """
         Run the complete RTTOV workflow. This is a wrapper for the chunked_run method.
@@ -490,23 +481,21 @@ class SynSat(SynSatBase):
                 print(f"... [synsat] running {ichunks}/{nchunks} chunk with", isel)
                 self.chunked_run(isel=isel, **kwargs)
 
-        self.synsat.result = np.row_stack( self.synsat.chunked_result )
-
+        self.synsat.result = np.row_stack(self.synsat.chunked_result)
 
     def extract_output(self):
-
         """
-        Extracts the output data from the RTTOV variables and prepares it for saving. 
+        Extracts the output data from the RTTOV variables and prepares it for saving.
         Output data is stored in the synsat.output attribute and have the following structure:
-        
+
         - The output data is stored in a xarray dataset.
         - The dataset contains the brightness temperatures for all channels.
-        
+
         Returns
         -------
         synsat : xarray.Dataset
             The output data.
-        
+
 
         """
 
@@ -524,7 +513,9 @@ class SynSat(SynSatBase):
         indat = attr.data_handler.input_data_as_profile
         alldat = indat.assign_coords({"channel": channels})
 
-        btrefl = xr.DataArray(data=self.synsat.result, coords=[alldat.profile, alldat.channel])
+        btrefl = xr.DataArray(
+            data=self.synsat.result, coords=[alldat.profile, alldat.channel]
+        )
         alldat["btrefl"] = btrefl
 
         btrefl = alldat["btrefl"].unstack()
@@ -549,11 +540,11 @@ class SynSat(SynSatBase):
         attr.output = synsat
 
         # try to write global attrs
-        if True: #try:
+        if True:  # try:
             synsat.attrs = output.prepare_global_attrs()
             synsat.attrs["input_filename"] = attr.input_filename
 
-        else: #except:
+        else:  # except:
             print("... [synsat]: WARNING: fail to write global attributes")
 
         self.synsat.output_data = synsat

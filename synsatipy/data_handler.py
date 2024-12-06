@@ -141,7 +141,6 @@ class DataHandler(object):
             The opened data.
         """
         isel = kwargs.pop("isel", None)
-        profile_dimensions = kwargs.pop("profile_dimensions", ["time", "lon", "lat"])
 
         if self.model == "auto":
             model = autodetect_model_by_filename(filename)
@@ -169,6 +168,20 @@ class DataHandler(object):
             self.input_data = indat.isel(**isel)
         else:
             self.input_data = indat
+
+
+    def stack_data_as_profile(self, **kwargs):
+        """
+        Stacks input data as profile data.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments.
+            - profile_dimensions : list, optional
+        """
+
+        profile_dimensions = kwargs.pop("profile_dimensions", ["time", "lon", "lat"])
 
         stacked_input_data = self.input_data.stack(profile=profile_dimensions)
         total_number_of_profiles = len(stacked_input_data.profile)
@@ -265,12 +278,15 @@ class DataHandler(object):
         myProfiles.SurfType = zeros[:, :2]
 
         skt = np.expand_dims(profs["SKT"], axis=1)
+        skt = np.clip(skt, 200, 400) 
+
         fastem = np.hstack([3 * ones, 5 * ones, 15 * ones, 0.1 * ones, 0.3 * ones])
 
         myProfiles.Skin = np.hstack([skt, zeros[:, :3], fastem])
 
         ps2m = np.expand_dims(profs["SP"], axis=1) * 1e-2  # in hPa
         T2m = np.expand_dims(profs["T2M"], axis=1)
+        T2m = np.clip(T2m, 200, 400) 
 
         q2m = np.expand_dims(q[:, 0], axis=1)  # only dew point there
 

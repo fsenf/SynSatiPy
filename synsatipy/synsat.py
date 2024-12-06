@@ -411,6 +411,8 @@ class SynSat(SynSatBase):
         elif type(inputfile_or_data) == type(xr.Dataset()):
             sdat.input_data = inputfile_or_data
 
+        sdat.stack_data_as_profile(**kwargs)
+
         self.synsat.data_handler = sdat
 
         return

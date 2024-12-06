@@ -68,6 +68,7 @@ autodoc_mock_imports = [
     "matplotlib",
     "xarray",
     "cartopy",
+    "pylab",
     "starter"
 ]
 

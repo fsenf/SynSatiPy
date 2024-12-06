@@ -77,7 +77,7 @@ def era_name_converter(era_name, mode="3d_to_2d"):
     return era_name_converted
 
 
-def open_era(era3d_name, add_pressure=True, qmin=1.1e-9):
+def open_era(era3d_name, add_pressure=True, qmin=1.1e-9, **kwargs):
     """
     Open the ERA data.
 

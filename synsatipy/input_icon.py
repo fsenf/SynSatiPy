@@ -171,10 +171,7 @@ def define_variable_mapping(flavor):
     return var_mapping
 
 
-def icon_variable_mapping(
-    dset,
-    flavor="ifces2",
-):
+def icon_variable_mapping(dset, flavor="ifces2", always_keep=[]):
     """
     Rename ICON variables to ERA5 variables.
 
@@ -182,6 +179,12 @@ def icon_variable_mapping(
     ----------
     dset : xarray.Dataset
         The ICON dataset.
+
+    flavor : str, optional
+        The flavor of the ICON dataset. Default is "ifces2".
+
+    always_keep : list, optional
+        List of variables to always keep. Default is [].
 
     Returns
     -------
@@ -195,6 +198,8 @@ def icon_variable_mapping(
     # variables
 
     icon2era = define_variable_mapping(flavor)
+    for iname in always_keep:
+        icon2era[iname] = iname
 
     for iname in icon2era:
         ename = icon2era[iname]
@@ -218,6 +223,11 @@ def read_georef(geofile, rad2deg=True):
 
     rad2deg : bool, optional
         Whether to convert the angles to degrees. Default is True.
+
+    Returns
+    -------
+    georef : xarray.Dataset
+        The georeference data containing clat and clon.
     """
 
     georef = xr.open_dataset(geofile)
@@ -229,7 +239,29 @@ def read_georef(geofile, rad2deg=True):
     return georef[["clat", "clon"]]
 
 
-def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True, geofile=None):
+def read_mask(maskfile):
+    """
+    Read the mask file.
+
+    Parameters
+    ----------
+    maskfile : str
+        The name of the mask file.
+
+    Returns
+    -------
+    mask : xarray.Dataset
+        The mask data.
+    """
+
+    mask = xr.open_dataset(maskfile)
+
+    return mask[["mask"]]
+
+
+def open_icon(
+    icon3d_name, qmin=1.1e-9, name_remapping=True, geofile=None, maskfile=None, **kwargs
+):
     """
     Open ICON dataset.
 
@@ -260,6 +292,13 @@ def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True, geofile=None):
     else:
         georef = None
 
+    if maskfile is not None:
+        mask = read_mask(maskfile)
+        always_keep = ["mask"]
+    else:
+        mask = None
+        always_keep = []
+
     input_options = {"chunks": "auto"}
 
     # open base datasets
@@ -277,15 +316,22 @@ def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True, geofile=None):
         icon3d = xr.merge([icon3dbase, icon3dqmix])
 
     elif flavor == "orcestra":
-        icon_name_props.update({"variable_stack": "hydrometeors1"})
-        icon_others_name = icon_name_creator(icon_name_props)
-        icon3dqmix1 = xr.open_dataset(icon_others_name, **input_options)
+        try:
+            icon_name_props.update({"variable_stack": "hydrometeors1"})
+            icon_others_name = icon_name_creator(icon_name_props)
+            icon3dqmix1 = xr.open_dataset(icon_others_name, **input_options)
 
-        icon_name_props.update({"variable_stack": "hydrometeors2"})
-        icon_others_name = icon_name_creator(icon_name_props)
-        icon3dqmix2 = xr.open_dataset(icon_others_name, **input_options)
+            icon_name_props.update({"variable_stack": "hydrometeors2"})
+            icon_others_name = icon_name_creator(icon_name_props)
+            icon3dqmix2 = xr.open_dataset(icon_others_name, **input_options)
 
-        icon3d = xr.merge([icon3dbase, icon3dqmix1, icon3dqmix2])
+            icon3dqmix = xr.merge([icon3dqmix1, icon3dqmix2])
+        except FileNotFoundError:
+            icon_name_props.update({"variable_stack": "hydrometeors"})
+            icon_others_name = icon_name_creator(icon_name_props)
+            icon3dqmix = xr.open_dataset(icon_others_name, **input_options)
+
+        icon3d = xr.merge([icon3dbase, icon3dqmix])
 
     # open surfacer props
     if flavor == "ifces2":
@@ -315,8 +361,15 @@ def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True, geofile=None):
     if georef is not None:
         icon = xr.merge([icon, georef])
 
+    # add mask
+    if mask is not None:
+        icon = xr.merge([icon, mask])
+
     # modify variables
     icon["qv"] = icon["qv"].clip(min=qmin)
+
+    if "t_g" in icon and "t_s" not in icon:
+        icon["t_s"] = icon["t_g"]
 
     if flavor == "ifces2":
         icon["clc"] = icon["clc"] / 100.0  # unit change from [0, 100] % to [0, 1]
@@ -330,6 +383,6 @@ def open_icon(icon3d_name, qmin=1.1e-9, name_remapping=True, geofile=None):
         icon = icon.assign_coords({"time": t})
 
     if name_remapping:
-        return icon_variable_mapping(icon, flavor=flavor)
+        return icon_variable_mapping(icon, flavor=flavor, always_keep=always_keep)
     else:
         return icon

@@ -183,10 +183,25 @@ class DataHandler(object):
 
         profile_dimensions = kwargs.pop("profile_dimensions", ["time", "lon", "lat"])
 
+        # stack the full data array
         stacked_input_data = self.input_data.stack(profile=profile_dimensions)
-        total_number_of_profiles = len(stacked_input_data.profile)
 
-        self.input_data_as_profile = stacked_input_data
+        full_index = np.arange(stacked_input_data.sizes['profile'])
+
+        # potentially sub-select profiles
+        if 'mask' in stacked_input_data:
+            mask = stacked_input_data['mask']
+            selected_profiles_index = full_index[mask]
+
+        else:
+            selected_profiles_index = full_index
+
+        selected_input_data = stacked_input_data.isel( profile = selected_profiles_index)
+
+        # store selected data
+        total_number_of_profiles = selected_input_data.sizes['profile'] 
+
+        self.input_data_as_profile = selected_input_data
 
         self.total_number_of_profiles = total_number_of_profiles
 

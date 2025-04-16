@@ -2,6 +2,12 @@
 
 # SynSatiPy
 
+
+[![RTD](https://app.readthedocs.org/projects/synsatipy/badge/?version=latest)](https://app.readthedocs.org/projects/synsatipy/badge/?version=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15227962.svg)](https://doi.org/10.5281/zenodo.15227962)
+
+
+
 - is a python package for atmospheric research (see [Science behind SynSatiPy](docs/Science-behind-SynSatiPy.md))
 
 - allows to derive satellite images from weather forecasts or from climate simulations

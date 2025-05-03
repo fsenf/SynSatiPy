@@ -14,13 +14,22 @@
 
 SynSatiPy is a Python interface to the RTTOV software that helps to input model data (e.g. from IFS or from ICON) and loads emissivity catalogues and sensor specific files.
 
+Currently, the SynSatiPy interface
+- supports the following RTTOV versions: v13.1 and v13.2.
+- provides interfaces to the following satellite sensors: SEVIRI
+- is tested with python 3.10 or higher
+
+
 ## Getting Started
 
 ### Installation
 
-Before SynsatiPy can be installed **RTTOV** must be downloaded, configured and installed on your target platform. See 
+Before SynSatiPy can be installed **RTTOV** must be downloaded, configured and installed on your target platform. See 
 - https://nwp-saf.eumetsat.int/site/software/rttov/ or
 - https://en.wikipedia.org/wiki/RTTOV_(radiative_transfer_code)
+
+
+
 
 SynSatiPy can be installed via `pip`. It is recommended to install the SynSatiPy package into a separate python environment. Perhaps, the optimal way is to adjust this tutorial to your needs:
 - [SynSatiPy Installation on DKRZ Levante](docs/Installation_on_Levante.md)

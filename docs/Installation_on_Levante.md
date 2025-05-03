@@ -45,12 +45,12 @@ After you downloaded and untared the RTTOV source code (assume the place is `~/t
 cd build
 mv Makefile.local Makefile.local~
 cp <PATH2CONFIG>/Makefile.levante.ifort .
-ln -s Makefile.levante_norpath.ifort Makefile.local
+ln -s Makefile.levante.ifort Makefile.local
 ```
 
 **(ii) setup the correct architecture**
 ```bash
-cp <PATH2CONFIG>/ifort-openmp-levante arch
+cp <PATH2CONFIG>/ifort-openmp-levante arch/
 ```
 
 **(iii) prepare compilation**
@@ -62,16 +62,16 @@ module purge
 # source ~/.bash_condainit
 # conda deactivate
 
-# module load intel-oneapi-compilers openmpi/4.1.2-intel-2021.5.0 netcdf-c/4.8.1-openmpi-4.1.2-intel-2021.5.0 netcdf-fortran/4.5.3-openmpi-4.1.2-intel-2021.5.0 hdf5/1.12.1-openmpi-4.1.2-intel-2021.5.0
+module load intel-oneapi-compilers openmpi/4.1.2-intel-2021.5.0 
 module load python3
 
+cd ../src
 ../build/Makefile.PL RTTOV_NETCDF=1 RTTOV_F2PY=1 RTTOV_USER_LAPACK=0
 ```
 
 
 **(iv) run compilation**
 ```bash
-cd ../src
 make ARCH=ifort-openmp-levante -j 8
 ```
 
@@ -97,10 +97,10 @@ source python3.10_synsatipy/bin/activate
 ```
 
 
-**(ii) Get SynSatiPy and install it**
+**(ii) Go to SynSatiPy and install it**
 
 ```bash
-# git clone ...
+cd ~/tools/SynSatiPy   # or where you actually did the clone for step I
 
 # install in dev mode
 pip install -e .
@@ -109,7 +109,7 @@ pip install -e .
 **(iii) prepare environment**
 
 ```bash
-export RTTOV_PYTHON_WRAPPER=/work/bb1262/tools/rttov/rttov-v13.2/wrapper/
+export RTTOV_PYTHON_WRAPPER=$HOME/tools/rttov/wrapper/
 ulimit -s 204800
 ```
 
@@ -136,7 +136,7 @@ deactivate
 **(ii) load envs in the correct order**
 ```bash
 module load python3
-source /work/bb1262/tools/conda/python3.10_synsatipy/bin/activate
+source $HOME/tools/python/python3.10_synsatipy/bin/activate
 ```
 
 **(iii) create a jupyter kernel with standard methods**
@@ -159,7 +159,7 @@ cd ~/.local/share/jupyter/kernels/python3-synsatipy
 source /etc/profile
 source ~/.bashrc
 
-source /work/bb1262/tools/conda/python3.10_synsatipy/bin/activate
+source $HOME/tools/python/python3.10_synsatipy/bin/activate
 
 ulimit -s 204800
 python -m ipykernel_launcher -f "$1"

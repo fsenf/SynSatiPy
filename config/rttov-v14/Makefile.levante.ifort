@@ -1,0 +1,134 @@
+# ------------------------------------------------------------------------------
+# Use this file to include external libraries when compiling RTTOV.
+# It is recommended to compile RTTOV with the netCDF library.
+# Any other external libraries required may also be specified here.
+# ------------------------------------------------------------------------------
+
+
+# To compile RTTOV against the netCDF library you must:
+# - specify the path to the library in the NETCDF_PREFIX variable below
+# - uncomment one FFLAGS_NETCDF line and one LDFLAGS_NETCDF line which are 
+#   appropriate for your installed library.
+
+# Similarly you can optionally specify a LAPACK library to compile against 
+# instead of using the LAPACK source included in the RTTOV package.
+
+# After editing this file run the build/rttov_compile.sh script from within the 
+# RTTOV src/ directory to compile RTTOV.
+
+
+# ------------------------------------------------------------------------------
+# NetCDF v4 library - optional, required for netCDF coefficient file I/O and
+#                     emissivity/BRDF atlases.
+#
+# NB The _RTTOV_NETCDF macro must be defined to compile with netCDF: this is
+#    done within the FFLAGS_NETCDF specified below.
+#    If not using the rttov_compile.sh script, then from within the src/
+#    directory you must first run:
+#    $ ../build/Makefile.PL RTTOV_NETCDF=1
+#
+# Since netCDF v4 depends on the HDF5 library you may also need to link against 
+# the HDF5 library used when building your netCDF library (see below).
+#
+# NB You may need to replace "lib" with "lib64" below, depending on the location
+#    of the libraries on your system
+# ------------------------------------------------------------------------------
+
+HDF5_PREFIX  = /sw/spack-levante/hdf5-1.12.1-tvymb5
+#HDF5_PREFIX  = /sw/spack-levante/hdf5-1.12.1-t746ip
+
+NETCDF_PREFIX  = /sw/spack-levante/netcdf-fortran-4.5.3-k6xq5g
+#NETCDF_PREFIX  = /sw/spack-levante/netcdf-fortran-4.5.3-pvmcx6
+
+
+# --- Uncomment one FFLAGS_NETCDF line:
+
+# For most compilers:
+FFLAGS_NETCDF  = -D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include
+
+# For xlf on AIX:
+# FFLAGS_NETCDF  = -WF,-D_RTTOV_NETCDF -I$(NETCDF_PREFIX)/include
+
+# NB Usually the above is sufficient, but if the netCDF module files (*.mod) are
+#    not in the include/ directory of your installation, then you may need to
+#    append something like the following to FFLAGS_NETCDF:
+#
+#      -I$(NETCDF_PREFIX)/path/to/modules
+
+# --- Uncomment one LDFLAGS_NETCDF line:
+
+# For netCDF v4.1:
+# LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff -lnetcdf
+
+# For netCDF v4.2 and later:
+LDFLAGS_NETCDF = -L$(NETCDF_PREFIX)/lib -lnetcdff
+
+
+# NB The netCDF v4 library depends on the HDF5 library so you may need to
+#    specify the path to this and uncomment the LDFLAGS_HDF5 line:
+
+
+LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5_hl -lhdf5 -lz
+
+
+# ------------------------------------------------------------------------------
+# LAPACK library: optional
+# The LAPACK routines used by RTTOV are included in src/main/lapack.f.
+# If you want to compile RTTOV against an external LAPACK library instead (e.g.
+# in order to resolve conflicts at the linking stage) then specify this here.
+# If not using the rttov_compile.sh script, then from within the src/ directory
+# you must first run the ../build/Makefile.PL script with the argument
+# RTTOV_USER_LAPACK=1 to exclude lapack.f from the Makefiles.
+# ------------------------------------------------------------------------------
+
+LAPACK_PREFIX = path-to-lapack-install
+
+# --- Uncomment the FFLAGS_LAPACK and LDFLAGS_LAPACK lines and edit as
+#     required for your installation:
+
+# FFLAGS_LAPACK  = $(FFLAG_MOD)$(LAPACK_PREFIX)/include
+# LDFLAGS_LAPACK = -L$(LAPACK_PREFIX)/lib -llapack
+
+
+
+# ------------------------------------------------------------------------------
+# Usually there is no need to edit anything below this line
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
+# Optional: HDF5 library, required for coefficient generation (developers only)
+#
+# NB The _RTTOV_HDF macro must be defined to compile with HDF: this is done 
+#    within the FFLAGS_HDF5 specified below. Do not use the rttov_compile.sh 
+#    script. From within the src/ directory you must first run:
+#    $ ../build/Makefile.PL RTTOV_HDF=1
+# ------------------------------------------------------------------------------
+
+# To compile RTTOV against the HDF5 library you must:
+# - specify the path to the library in the HDF5_PREFIX variable above
+# - uncomment the FFLAGS_HDF5 and LDFLAGS_HDF5 lines below
+
+# --- Uncomment the FFLAGS_HDF5 and LDFLAGS_HDF5 lines: 
+# --- NOT required if only compiling against netCDF
+
+# FFLAGS_HDF5  = -D_RTTOV_HDF $(FFLAG_MOD)$(HDF5_PREFIX)/include
+# LDFLAGS_HDF5 = -L$(HDF5_PREFIX)/lib -lhdf5hl_fortran -lhdf5_hl -lhdf5_fortran -lhdf5 -lz
+
+
+
+# ------------------------------------------------------------------------------
+# Optional: specify other libraries here e.g. DrHook
+# ------------------------------------------------------------------------------
+DRHOOK_PREFIX  = path-to-drhook-install
+# FFLAGS_DRHOOK  = -I$(DRHOOK_PREFIX)
+# LDFLAGS_DRHOOK = -L$(DRHOOK_PREFIX) -ldrhook -lmpi_serial
+
+
+
+# ------------------------------------------------------------------------------
+# Include all macros on the following lines:
+# (Does not need editing unless you add more libraries)
+# ------------------------------------------------------------------------------
+
+FFLAGS_EXTERN  = $(FFLAGS_NETCDF)  $(FFLAGS_HDF5)  $(FFLAGS_DRHOOK)  $(FFLAGS_LAPACK)
+LDFLAGS_EXTERN = $(LDFLAGS_NETCDF) $(LDFLAGS_HDF5) $(LDFLAGS_DRHOOK) $(LDFLAGS_LAPACK)

@@ -1,0 +1,23 @@
+FC=/sw/spack-levante/openmpi-4.1.2-yfwe6t/bin/mpif90
+FC77=/sw/spack-levante/openmpi-4.1.2-yfwe6t/bin/mpif90
+CC=/sw/spack-levante/openmpi-4.1.2-yfwe6t/bin/mpicc
+LDFLAGS_ARCH=-qopenmp -Wl,-rpath,/sw/spack-levante/netcdf-fortran-4.5.3-k6xq5g/lib:/sw/spack-levante/hdf5-1.12.1-tvymb5/lib
+CFLAGS_ARCH=
+FFLAGS_ARCH=-fPIC -march=core-avx2 -O3 -fp-model source -qopenmp -g -gdwarf-4 -pc64
+AR=ar r
+
+# Loop unrolling causes ifort v13 and later to take a long time to compile these subroutines
+FFLAGS_ARCH_rttov_opdep_9_ad=-fPIC -march=core-avx2 -O3 -unroll0 -fp-model source -qopenmp
+FFLAGS_ARCH_rttov_opdep_9_k=-fPIC -march=core-avx2 -O3 -unroll0 -fp-model source -qopenmp
+FFLAGS_ARCH_rttov_opdep_13_ad=-fPIC -march=core-avx2 -O3 -unroll0 -fp-model source -qopenmp
+FFLAGS_ARCH_rttov_opdep_13_k=-fPIC -march=core-avx2 -O3 -unroll0 -fp-model source -qopenmp
+
+# ifort v12 with -O3 and -openmp gives erroneous AD/K output for MFASIS
+FFLAGS_ARCH_rttov_mfasis_ad=-fPIC -march=core-avx2 -O2 -fp-model source -qopenmp
+FFLAGS_ARCH_rttov_mfasis_k=-fPIC -march=core-avx2 -O2 -fp-model source -qopenmp
+
+# -fp-model source ensures more consistent floating point results
+
+F2PY=LDFLAGS=-Wl,-rpath,/sw/spack-levante/netcdf-fortran-4.5.3-k6xq5g/lib:/sw/spack-levante/hdf5-1.12.1-tvymb5/lib f2py --fcompiler=intelem
+F2PYFLAGS_ARCH="-fPIC -march=core-avx2"
+F2PYLDFLAGS_ARCH=-L/sw/spack-levante/netcdf-fortran-4.5.3-k6xq5g/lib -L/sw/spack-levante/hdf5-1.12.1-tvymb5/lib -liomp5 -lhdf5 -lhdf5_fortran -lnetcdff  -lhdf5_hl -lhdf5_hl_fortran  -lz

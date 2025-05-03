@@ -3,30 +3,76 @@
 
 Levante is the current (year 2024) supercomputer at DKRZ (German Climate Computing Center). 
 
-Two steps are needed to get SynsatiPy running on "standard" datasets. First, the forward operator RTTOV needs to be installed and second the python package SynSatiPy also needs a separate installation.
+Three steps are needed to get SynsatiPy running on "standard" datasets.
+- First, the package source of SynSatiPy needs to be downloaded
+- Second, the forward operator RTTOV needs to be installed and 
+- third the python package SynSatiPy also needs a separate installation.
 
-## Step I: Installation of RTTOV
+It is assumed that all different activities happen a meaningfully chosen place, e.g. `~/tools`. If you need to prepared it , do
 
-After you downloaded and untared the RTTOV source code:
+```bash
+mkdir ~/tools   # or any other place your directory structure
+cd ~/tools
+```
+
+
+## Step I: Download SynSatiPy Package 
+The SynSatiPy package is downloaded from github.com first for two reasons:
+1. we will use specific configuration files prepared for the installation of RTTOV version x. 
+2. we will install the python installation after RTTOV installation from the downloaded source
+
+
+**(i) download sources from github.com**
+```bash 
+git clone https://github.com/fsenf/SynSatiPy.git
+```
+
+**(ii) remember where configuration is stored**
+
+Check which configuration files are available
+```bash
+ls -l SynSatiPy/config/rttov*
+```
+
+The RTTOV version-specific subdirectory, e.g. `SynSatiPy//config/rttov-v13` is used as `<PATH2CONFIG>` in the following. 
+
+## Step II: Installation of RTTOV
+
+After you downloaded and untared the RTTOV source code (assume the place is `~/tools/rttov`):
 
 **(i) link in the correct Makefile**
 ```bash
 cd build
 mv Makefile.local Makefile.local~
-cp <PATH2CONFIG>/Makefile.levante_norpath.ifort .
+cp <PATH2CONFIG>/Makefile.levante.ifort .
 ln -s Makefile.levante_norpath.ifort Makefile.local
 ```
 
 **(ii) setup the correct architecture**
 ```bash
-cp <PATH2CONFIG>/ifort-openmp-levante-ext arch
+cp <PATH2CONFIG>/ifort-openmp-levante arch
+```
+
+**(iii) prepare compilation**
+
+```bash
+module purge
+
+#--- check that no conda env is loaded
+# source ~/.bash_condainit
+# conda deactivate
+
+# module load intel-oneapi-compilers openmpi/4.1.2-intel-2021.5.0 netcdf-c/4.8.1-openmpi-4.1.2-intel-2021.5.0 netcdf-fortran/4.5.3-openmpi-4.1.2-intel-2021.5.0 hdf5/1.12.1-openmpi-4.1.2-intel-2021.5.0
+module load python3
+
+../build/Makefile.PL RTTOV_NETCDF=1 RTTOV_F2PY=1 RTTOV_USER_LAPACK=0
 ```
 
 
-
-**(iii) run compilation**
+**(iv) run compilation**
 ```bash
-make ARCH=ifort-openmp-levante-ext -j 8
+cd ../src
+make ARCH=ifort-openmp-levante -j 8
 ```
 
 **(iv) additional data**
@@ -34,13 +80,18 @@ make ARCH=ifort-openmp-levante-ext -j 8
 *see RTTOV documentation*
 
 
-## Step II: Installation of SynSatiPy
+## Step III: Installation of SynSatiPy
 
 
 **(i) Setting up a virtual python env**
 
+go to your place where python/conda envs are stored
+
 ```bash
-cd /work/bb1262/tools/conda
+cd ~/tools
+mkdir python
+cd python
+
 python -m venv python3.10_synsatipy
 source python3.10_synsatipy/bin/activate
 ```
@@ -72,7 +123,7 @@ pytest
 If all tests run successfully than the installation procedure went well up to this point.
 
 
-## Step III: Setting up a Dedicated Jupyter Kernel
+## Step IV: Setting up a Dedicated Jupyter Kernel
 
 This is a bit tricky because we need to use python from our env, but jupyter from the base conda.
 

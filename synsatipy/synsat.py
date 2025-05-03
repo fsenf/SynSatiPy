@@ -80,8 +80,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # init field
         self.synsat.chunked_result = []
 
-        # load msg
-        self.load_msg(**synsat_kwargs)
+        # load instrument based on specified instrument
+        self.load_instrument(**synsat_kwargs)
 
         return
 
@@ -111,7 +111,34 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         return
 
-    def load_msg(self, synsat_msg_number=3, **synsat_kwargs):
+    def load_instrument(self, **synsat_kwargs):
+        """
+        Loads the specified instrument configuration.
+
+        Parameters
+        ----------
+        **synsat_kwargs : dict
+            Additional keyword arguments including synsat_instrument.
+
+        Returns
+        -------
+        None
+        """
+        # Default to SEVIRI if not specified
+        instrument = synsat_kwargs.get("synsat_instrument", "seviri").lower()
+
+        if instrument == "seviri":
+            # Load SEVIRI configuration
+            self.load_msg_seviri(**synsat_kwargs)
+        elif instrument == "abi":
+            # Load GOES-ABI configuration
+            self.load_goes_abi(**synsat_kwargs)
+        else:
+            raise ValueError(f"Unsupported instrument: {instrument}")
+
+        return
+
+    def load_msg_seviri(self, synsat_msg_number=3, **synsat_kwargs):
         """
         Loads configuration specific for the MSG-SEVIRI instrument.
 
@@ -122,11 +149,9 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         **synsat_kwargs : dict
             Additional keyword arguments.
 
-
         Returns
         -------
         None
-
         """
 
         # SEVIRI specifics
@@ -182,6 +207,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         chan_list_seviri = synsat_kwargs.get("synsat_channel_list", default_chan_list)
 
         attr = self.synsat
+        attr.instrument = "SEVIRI"
+
 
         chan_index = np.array(chan_list_seviri) - 1
 
@@ -214,14 +241,114 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         print(f"... [synsat] load coefficient file {coef_filename}")
 
         # save vars to attributes
-        attr.chan_list_seviri = chan_list_seviri
-        attr.nchan_seviri = nchan_seviri
+        attr.chan_list_instrument = chan_list_seviri
+        attr.nchan_instrument = nchan_seviri
         attr.coef_filename = coef_filename
 
         # Load the instruments: for HIRS and MHS do not supply a channel list and
         # so read all channels
         try:
             self.loadInst(chan_list_seviri)
+        except self.RttovError as e:
+            sys.stderr.write("Error loading instrument(s): {!s}".format(e))
+            sys.exit(1)
+
+        return
+
+    def load_goes_abi(self, synsat_goes_number=16, **synsat_kwargs):
+        """
+        Loads configuration specific for the GOES-ABI instrument.
+
+        Parameters
+        ----------
+        synsat_goes_number : int
+            GOES satellite number. (Default value = 16)
+        **synsat_kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
+
+        # ABI specifics
+        # ================
+        abi_allchannel_names = [
+            "ch01",  # 0.47 µm - Blue
+            "ch02",  # 0.64 µm - Red
+            "ch03",  # 0.86 µm - Veggie
+            "ch04",  # 1.37 µm - Cirrus
+            "ch05",  # 1.6 µm - Snow/Ice
+            "ch06",  # 2.2 µm - Cloud Particle Size
+            "ch07",  # 3.9 µm - Shortwave Window
+            "ch08",  # 6.2 µm - Upper-Level Water Vapor
+            "ch09",  # 6.9 µm - Mid-Level Water Vapor
+            "ch10",  # 7.3 µm - Lower-Level Water Vapor
+            "ch11",  # 8.4 µm - Cloud-Top Phase
+            "ch12",  # 9.6 µm - Ozone
+            "ch13",  # 10.3 µm - Clean IR Longwave Window
+            "ch14",  # 11.2 µm - IR Longwave Window
+            "ch15",  # 12.3 µm - Dirty Longwave Window
+            "ch16",  # 13.3 µm - CO2 Longwave
+        ]
+        abi_var_names = [
+            "rho047",  # Reflectivity channels (1-6)
+            "rho064",
+            "rho086",
+            "rho137",
+            "rho160",
+            "rho220",
+            "bt039",   # Brightness temperature channels (7-16)
+            "bt062",
+            "bt069",
+            "bt073",
+            "bt084",
+            "bt096",
+            "bt103",
+            "bt112",
+            "bt123",
+            "bt133",
+        ]
+
+        abi_var_units = (
+            6 * ["-",] + 10 * ["K",]
+        )
+
+        # GOES-ABI options
+        # ===========
+        # Default to IR channels (channels 7-16)
+        default_chan_list = (7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+        chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
+
+        attr = self.synsat
+        attr.instrument = "ABI"
+
+        chan_index = np.array(chan_list_instrument) - 1
+
+        attr.channels = np.array(abi_var_names)[chan_index]
+        attr.units = np.array(abi_var_units)[chan_index]
+        nchan_instrument = len(chan_list_instrument)
+
+        # check if solar channel are included
+        attr.solar_calculations = np.any(np.array(chan_list_instrument) < 7)
+
+        # Add cloud opt. props file
+        cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_goes_{synsat_goes_number}_abi.dat"
+        self.FileSccld = cldaer_filename
+        print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
+
+        coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_goes_{synsat_goes_number}_abi_o3.dat"
+        self.FileCoef = coef_filename
+        print(f"... [synsat] load coefficient file {coef_filename}")
+
+        # save vars to attributes
+        attr.chan_list_instrument = chan_list_instrument
+        attr.nchan_instrument = nchan_instrument
+        attr.coef_filename = coef_filename
+
+        # Load the instruments
+        try:
+            self.loadInst(chan_list_instrument)
         except self.RttovError as e:
             sys.stderr.write("Error loading instrument(s): {!s}".format(e))
             sys.exit(1)
@@ -285,7 +412,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             nemis_classes = 4
 
         surfemisrefl_seviri = np.zeros(
-            (nemis_classes, attr.nprofiles, attr.nchan_seviri), dtype=np.float64
+            (nemis_classes, attr.nprofiles, attr.nchan_instrument), dtype=np.float64
         )
 
         self.SurfEmisRefl = surfemisrefl_seviri
@@ -529,7 +656,8 @@ class SynSat(SynSatBase):
             # also set meta data
             a = {}
             a["units"] = attr.units[ichan]
-            a["long_name"] = "Synsat SEVIRI Brightness Temperature at %.1f um" % (
+            a["long_name"] = "Synsat %s Brightness Temperature at %.1f um" % (
+                attr.instrument,
                 np.float32(chan_name[2:]) / 10.0
             )
 

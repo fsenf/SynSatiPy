@@ -124,6 +124,10 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         -------
         None
         """
+
+        implemented_instruments = ["seviri", "abi"]
+
+
         # Default to SEVIRI if not specified
         instrument = synsat_kwargs.get("synsat_instrument", "seviri").lower()
 
@@ -134,6 +138,11 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             # Load GOES-ABI configuration
             self.load_goes_abi(**synsat_kwargs)
         else:
+            print(
+                f"... [synsat] WARNING: {instrument} is not a valid instrument. "
+                f"Supported instruments are: {', '.join(implemented_instruments)}"
+            )
+            # Raise an error if the instrument is not supported
             raise ValueError(f"Unsupported instrument: {instrument}")
 
         return

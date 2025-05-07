@@ -1,4 +1,3 @@
-
 """
 This module provides functions to open the nextGEMS dataset.
 """
@@ -17,7 +16,7 @@ from synsatipy.utils.spacetools import lonlat2azizen
 
 def open_ngdataset(cat_path, **kwargs):
     """
-    Open the nextGEMS dataset from the catalog. 
+    Open the nextGEMS dataset from the catalog.
 
     Parameters
     ----------
@@ -34,7 +33,7 @@ def open_ngdataset(cat_path, **kwargs):
     -------
     dset : xarray.Dataset
         The opened dataset.
-    
+
     Notes
     -----
     The dataset is attached with the coordinates.
@@ -53,7 +52,7 @@ def open_ngdataset(cat_path, **kwargs):
     return dset
 
 
-def get_index_for_zenith_mask(dset, max_zenith=80):
+def get_index_for_zenith_mask(dset, max_zenith=80, lon0=0.0):
     """
     Get the index for the zenith mask.
 
@@ -61,8 +60,13 @@ def get_index_for_zenith_mask(dset, max_zenith=80):
     ----------
     dset : xarray.Dataset
         The dataset.
+
     max_zenith : float, optional
         Maximum zenith angle. Default is 80.
+
+    lon0 : float, optional
+        Longitude of the sub-satellite point. Default is 0.0.
+
 
     Returns
     -------
@@ -70,7 +74,7 @@ def get_index_for_zenith_mask(dset, max_zenith=80):
         The index for the zenith
     """
 
-    azi, zen = lonlat2azizen(dset["lon"], dset["lat"])
+    azi, zen = lonlat2azizen(dset["lon"], dset["lat"], lon0=lon0)
 
     zen_mask = zen <= max_zenith
 
@@ -101,7 +105,6 @@ def get_index_for_regional_extend(dset, extend):
 
     """
 
-
     lon_extend = extend[0:2]
     lat_extend = extend[2:4]
 
@@ -116,7 +119,7 @@ def get_index_for_regional_extend(dset, extend):
 
 
 def input_regional_nextgems(
-    cat_path, mask_type=None, extend=None, time=None, max_zenith=80, **kwargs
+    cat_path, mask_type=None, extend=None, time=None, max_zenith=80, lon0=0.0, **kwargs
 ):
     """
     Get the regional nextGEMS dataset.
@@ -127,24 +130,27 @@ def input_regional_nextgems(
         Path to the catalog file.
 
     mask_type : str, optional
-        Type of mask. 
+        Type of mask.
         Types of mask can be "regional" or "zenith".
         Default is None.
-    
+
     extend : list, optional
-        Extend of the region. 
+        Extend of the region.
         The extend is in the form of [lon_min, lon_max, lat_min, lat_max].
         Default is None.
-    
+
     time : str, optional
         Time of the data. Default is None.
-    
+
     max_zenith : float, optional
         Maximum zenith angle. Default is 80.
-    
+
+    lon0 : float, optional
+        Longitude of the sub-satellite point. Default is 0.0.
+
     **kwargs : dict
         Additional keyword arguments.
-    
+
     Returns
     -------
     dset_reg_sub : xarray.Dataset
@@ -160,7 +166,9 @@ def input_regional_nextgems(
         dset_reg = dset.isel(cell=regional_index)
 
     elif mask_type == "zenith":
-        regional_index = get_index_for_zenith_mask(dset, max_zenith=max_zenith)
+        regional_index = get_index_for_zenith_mask(
+            dset, max_zenith=max_zenith, lon0=lon0
+        )
         dset_reg = dset.isel(cell=regional_index)
 
     else:
@@ -189,7 +197,7 @@ def nextgems_variable_mapping(
     ----------
     dset : xarray.Dataset
         The dataset.
-    
+
     Returns
     -------
     d_renamed : xarray.Dataset
@@ -233,20 +241,19 @@ def open_nextgems(cat_path, name_remapping=True, **kwargs):
     ----------
     cat_path : str
         Path to the catalog file.
-    
+
     name_remapping : bool, optional
         Whether to remap the variable names. Default is True.
-    
+
     **kwargs : dict
         Additional keyword arguments.
-    
+
     Returns
     -------
     dset : xarray.Dataset
         The opened dataset.
-    
+
     """
-    
 
     dset = input_regional_nextgems(cat_path, **kwargs)
 

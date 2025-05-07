@@ -134,9 +134,11 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         if instrument == "seviri":
             # Load SEVIRI configuration
             self.load_msg_seviri(**synsat_kwargs)
+
         elif instrument == "abi":
             # Load GOES-ABI configuration
             self.load_goes_abi(**synsat_kwargs)
+        
         else:
             print(
                 f"... [synsat] WARNING: {instrument} is not a valid instrument. "
@@ -218,6 +220,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         attr = self.synsat
         attr.instrument = "SEVIRI"
 
+        subsatellite_lon = synsat_kwargs.get("synsat_subsatellite_lon", 0.0)
+        attr.subsatellite_lon = subsatellite_lon
 
         chan_index = np.array(chan_list_seviri) - 1
 
@@ -331,6 +335,9 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         attr = self.synsat
         attr.instrument = "ABI"
+
+        subsatellite_lon = synsat_kwargs.get("synsat_subsatellite_lon",  -75.2)
+        attr.subsatellite_lon = subsatellite_lon
 
         chan_index = np.array(chan_list_instrument) - 1
 
@@ -522,6 +529,7 @@ class SynSat(SynSatBase):
         """
 
         model = kwargs.get("model", "auto")
+        lon0 = self.synsat.subsatellite_lon
 
         # use data handler to load data
         sdat = data_handler.DataHandler(model=model)
@@ -534,7 +542,7 @@ class SynSat(SynSatBase):
 
             self.synsat.input_filename = inputfile
 
-            sdat.open_data(inputfile, **kwargs)
+            sdat.open_data(inputfile, lon0 = lon0, **kwargs)
 
         elif type(inputfile_or_data) == type(xr.Dataset()):
             sdat.input_data = inputfile_or_data
@@ -561,8 +569,9 @@ class SynSat(SynSatBase):
 
         # transform input data into profiles
         sdat = self.synsat.data_handler
+        lon0 = self.synsat.subsatellite_lon
 
-        profs = sdat.data2profile(**kwargs)
+        profs = sdat.data2profile(lon0 = lon0, **kwargs)
 
         # forward profiles to RTTOV
         self.Profiles = profs

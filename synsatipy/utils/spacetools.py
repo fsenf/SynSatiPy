@@ -4,11 +4,11 @@ import numpy as np
 ######################################################################
 
 
-def lonlat2azizen(lon, lat):
+def lonlat2azizen(lon, lat, lon0 = 0.0):
 
     '''
     Calculates satellite zenith and azimuth given lon / lat. Assumes
-    sub-satellite longitude at zero degree E.
+    sub-satellite longitude at `lon0` degree E.
 
 
     Parameters
@@ -16,8 +16,12 @@ def lonlat2azizen(lon, lat):
     lon : float or numpy array
         longitude
    
-    lat : float or numpy array
+    lat : float or numpy array 
         latitude
+    
+    lon0 : float, optional
+        longitude of sub-satellite point. The default is 0.0.
+        This is the longitude of the satellite at zenith.
 
 
     Returns
@@ -35,7 +39,7 @@ def lonlat2azizen(lon, lat):
     pi = np.pi
     
 # from degree to radiant .............................................
-    lam, phi = np.deg2rad(lon), np.deg2rad(lat)
+    lam, phi = np.deg2rad(lon - lon0), np.deg2rad(lat)
     
 
 # calculate angle on great circle between pixel and (0,0) ............

@@ -141,6 +141,7 @@ class DataHandler(object):
             The opened data.
         """
         isel = kwargs.pop("isel", None)
+        lon0 = kwargs.pop("lon0", 0.0)
 
         if self.model == "auto":
             model = autodetect_model_by_filename(filename)
@@ -162,7 +163,7 @@ class DataHandler(object):
             #            from input_icon import open_icon
 
             catname = filename
-            indat = input_nextgems.open_nextgems(catname, **kwargs)
+            indat = input_nextgems.open_nextgems(catname, lon0 = lon0, **kwargs)
 
         if isel is not None:
             self.input_data = indat.isel(**isel)
@@ -249,6 +250,8 @@ class DataHandler(object):
         else:
             use_snow_factor = False
 
+        lon0 = kwargs.pop("lon0", 0.0)
+
         # get all stacked data
         stacked_input_data = self.input_data_as_profile
 
@@ -281,7 +284,7 @@ class DataHandler(object):
 
         # get satellite angles
         lon, lat = profs["lon"].data, profs["lat"].data
-        azi, zen = lonlat2azizen(lon, lat)
+        azi, zen = lonlat2azizen(lon, lat, lon0=lon0)
 
         # set max zen angle
         zen = np.clip(zen, 0, 80)

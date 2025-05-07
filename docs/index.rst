@@ -31,11 +31,11 @@ SynSatiPy is a Python interface to the RTTOV software that help to input model d
 
    Science-behind-SynSatiPy.md
 
-examples/01-First-Steps-with-SynSatiPy.ipynb
-examples/02-Run-Synsat-on-ERA5-Data-for-SEVIRI.ipynb
-examples/03-Compare-ERA5-SEVIRI-Synsat-to-Meteosat-Obs.ipynb
-examples/04-Run-Synsat-on-ICON-Data-for-SEVIRI.ipynb
-examples/05-Compare-ICON-SEVIRI-Synsat-to-Meteosat-Obs.ipynb
+   examples/01-First-Steps-with-SynSatiPy.ipynb
+   examples/02-Run-Synsat-on-ERA5-Data-for-SEVIRI.ipynb
+   examples/03-Compare-ERA5-SEVIRI-Synsat-to-Meteosat-Obs.ipynb
+   examples/04-Run-Synsat-on-ICON-Data-for-SEVIRI.ipynb
+   examples/05-Compare-ICON-SEVIRI-Synsat-to-Meteosat-Obs.ipynb
 
 
 .. toctree::

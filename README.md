@@ -16,7 +16,7 @@ SynSatiPy is a Python interface to the RTTOV software that helps to input model 
 
 Currently, the SynSatiPy interface
 - supports the following RTTOV versions: v13.1 and v13.2.
-- provides interfaces to the following satellite sensors: SEVIRI
+- provides interfaces to the following satellite sensors: MSG-SEVIRI and GOES-ABI
 - is tested with python 3.10 or higher
 
 
@@ -42,9 +42,12 @@ Further documentation is provided here: https://synsatipy.readthedocs.io.
 
 ## Contributing
 Please feel invited to contributed to the SynSatiPy python package (via pull requests). Possible extension are (not exclusive):
-- implementation of further satellite sensor interfaces
+- implementation of further satellite sensor interfaces (currently supports MSG-SEVIRI and GOES-ABI)
 - implementation of further model input interfaces
 
 Please provide bug reports or ideas for extensions as issues!
+
+## Recent Updates
+For detailed information about recent changes and updates, see the [CHANGELOG.md](CHANGELOG.md).
 
 

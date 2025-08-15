@@ -6,11 +6,24 @@ import xarray as xr
 
 
 try:
+    if "RTTOV_PYTHON_WRAPPER" not in os.environ:
+        raise EnvironmentError('Environment variable "RTTOV_PYTHON_WRAPPER" is not set.')
+
     RTTOV_PYTHON_WRAPPER = os.environ["RTTOV_PYTHON_WRAPPER"]
+    print(f'RTTOV_PYTHON_WRAPPER environment variable found: {RTTOV_PYTHON_WRAPPER}')
+
+    if not os.path.isdir(RTTOV_PYTHON_WRAPPER):
+        raise NotADirectoryError(f'The path specified by RTTOV_PYTHON_WRAPPER does not exist: {RTTOV_PYTHON_WRAPPER}')
 
     sys.path.append(RTTOV_PYTHON_WRAPPER)
+    print(f'Added {RTTOV_PYTHON_WRAPPER} to sys.path.')
 
-    import pyrttov
+    try:
+        import pyrttov
+        print('Successfully imported pyrttov module.')
+    except ImportError as e:
+        print(f'Failed to import pyrttov from {RTTOV_PYTHON_WRAPPER}: {e}')
+        raise
 
 except:
 
@@ -29,7 +42,7 @@ except:
 
 # Version
 # =======
-__version__ = 0.1
+__version__ = 1.0.1
 
 
 # Git Hash

@@ -33,7 +33,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name=PACKAGE_NAME,
-    version="0.1",
+    version="v1.0.1",
     author="Fabian Senf",
     author_email="senf@tropos.de",
     packages=get_packages(PACKAGE_NAME),

@@ -1,10 +1,14 @@
-# Python dependencies
-numpy
-scipy
-pandas
-h5py
-netcdf4
-xarray
-dask
-cartopy
-matplotlib
+numpy<2
+bokeh==3.4.0
+dask-expr==1.0.9
+distributed==2024.4.0
+easygems==0.0.7
+GitPython==3.1.43
+goes2go==2025.2.0
+intake-esm==2024.2.6
+intake-xarray==0.7.0
+ipykernel==6.29.3
+lz4==4.3.3
+pyarrow-hotfix==0.6
+pydocstyle==6.3.0
+pytest==8.1.1

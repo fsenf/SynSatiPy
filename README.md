@@ -4,7 +4,7 @@
 
 
 [![RTD](https://app.readthedocs.org/projects/synsatipy/badge/?version=latest)](https://app.readthedocs.org/projects/synsatipy/badge/?version=latest)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15227962.svg)](https://doi.org/10.5281/zenodo.15227962)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15227961.svg)](https://doi.org/10.5281/zenodo.15227961)
 
 
 

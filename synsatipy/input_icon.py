@@ -38,7 +38,7 @@ def icon_name_analyzer(icon_name):
     icon_name_props = {}
     icon_name_props["fullpath"] = fullpath
 
-    if "ifces2" in fullpath:
+    if "ifces2" in fullpath or "hurricane-centric" in fullpath:
         icon_name_props["flavor"] = "ifces2"
 
         base = base.replace("full_", "full-")

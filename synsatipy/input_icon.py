@@ -77,6 +77,30 @@ def icon_name_analyzer(icon_name):
         icon_name_props["domain"] = domain
         icon_name_props["time_str"] = time_str
 
+    elif "atm_3d_dyn" in icon_name:
+        icon_name_props["flavor"] = "hamlite"
+
+        # atm_3d_dyn_DOM01_L62_20200912T000000Z_regrid7km.nc
+        # ['lam', 'germ', '2019', 'atm', '3d', 'dyn', 'ml', '20190618T020000Z.nc']
+        (
+            domain_key,
+            domain_name,
+            domain_year,
+            model_component,
+            data_type,
+            variable_stack,
+            level_type,
+            time_str,
+        ) = base.split("_")
+        domain = f"{domain_key}_{domain_name}_{domain_year}"
+
+        icon_name_props["domain"] = domain
+        icon_name_props["model_component"] = model_component
+        icon_name_props["data_type"] = data_type
+        icon_name_props["variable_stack"] = variable_stack
+        icon_name_props["level_type"] = level_type
+        icon_name_props["time_str"] = time_str
+
     return icon_name_props
 
 
@@ -114,6 +138,10 @@ def icon_name_creator(icon_name_props):
         )
     elif flavor == "orcestra":
         icon_name = "{fullpath}/{flavor}_{resolution}_{experiment}_{model_component}_{data_type}_{variable_stack}_{domain}_{time_str}.nc".format(
+            **icon_name_props
+        )
+    elif flavor == "hamlite":
+        icon_name = "{fullpath}/{domain}_{model_component}_{data_type}_{variable_stack}_{level_type}_{time_str}.nc".format(
             **icon_name_props
         )
 
@@ -159,6 +187,22 @@ def define_variable_mapping(flavor):
             "qv": "q",
             "qc": "clwc",
             "qi": "ciwc",
+            "qs": "cswc",
+            "ts": "SKT",
+            "tas": "T2M",
+            "ps": "SP",
+            "clc": "cc",
+            "clon": "lon",
+            "clat": "lat",
+        }
+
+    elif flavor == "hamlite":
+        var_mapping = {
+            "phalf": "p",
+            "ta": "t",
+            "hus": "q",
+            "clw": "clwc",
+            "cli": "ciwc",
             "qs": "cswc",
             "ts": "SKT",
             "tas": "T2M",
@@ -333,6 +377,18 @@ def open_icon(
 
         icon3d = xr.merge([icon3dbase, icon3dqmix])
 
+    elif flavor == "hamlite":
+        icon_name_props.update({"variable_stack": "pre"})
+        icon_others_name = icon_name_creator(icon_name_props)
+        icon3dpres = xr.open_dataset(icon_others_name, **input_options)
+        icon3dpres = icon3dpres.sel(time=icon3dbase.time, height=icon3dbase.height)
+
+        icon_name_props.update({"variable_stack": "cld"})
+        icon_others_name = icon_name_creator(icon_name_props)
+        icon3dcld = xr.open_dataset(icon_others_name, **input_options)
+
+        icon3d = xr.merge([icon3dbase, icon3dpres, icon3dcld])
+
     # open surfacer props
     if flavor == "ifces2":
         icon_name_props.update(
@@ -348,17 +404,31 @@ def open_icon(
                 "variable_stack": "ml",
             }
         )
+
+    elif flavor == "hamlite":
+        icon_name_props.update(
+            {
+                "data_type": "2d",
+                "variable_stack": "std",
+            }
+        )
     icon_others_name = icon_name_creator(icon_name_props)
     icon2d = xr.open_dataset(icon_others_name, **input_options)
 
     # only select 3d timeslot
-    icon2d = icon2d.sel(time=icon3d.time).squeeze(dim="height")
+    icon2d = icon2d.sel(time=icon3d.time)
+    
+    for hname in 'height', 'height_2':
+        if hname in icon2d.dims:
+            icon2d = icon2d.squeeze(dim=hname)
 
     # merge dataset
     icon = xr.merge([icon2d, icon3d])
 
     # add georef
     if georef is not None:
+        if 'cell' in georef.dims and 'ncells' in icon.dims:
+            georef = georef.rename({'cell': 'ncells'})
         icon = xr.merge([icon, georef])
 
     # add mask
@@ -366,7 +436,8 @@ def open_icon(
         icon = xr.merge([icon, mask])
 
     # modify variables
-    icon["qv"] = icon["qv"].clip(min=qmin)
+    if "qv" in icon:
+        icon["qv"] = icon["qv"].clip(min=qmin)
 
     if "t_g" in icon and "t_s" not in icon:
         icon["t_s"] = icon["t_g"]
@@ -376,6 +447,10 @@ def open_icon(
     elif flavor == "orcestra":
         qtot = icon["qc"] + icon["qi"] + icon["qs"] + icon["qr"]
         icon["clc"] = xr.where(qtot > qmin, 1.0, 0.0)
+    elif flavor == "hamlite":
+        qtot = icon["clw"] + icon["cli"] + icon["qs"] + icon["qr"] + icon["qg"]
+        icon["clc"] = xr.where(qtot > qmin, 1.0, 0.0)
+        
 
     # set correct time object
     if flavor == "ifces2":

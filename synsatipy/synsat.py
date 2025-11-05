@@ -685,13 +685,9 @@ class SynSat(SynSatBase):
 
         del synsat.coords["channel"]
 
-
-        # Try to write global attrs
-        if True:  # try:
-            synsat.attrs = output.prepare_global_attrs()
-            synsat.attrs["input_filename"] = attr.input_filename
-        else:  # except:
-            print("... [synsat]: WARNING: fail to write global attributes")
+        # Write global attrs
+        synsat.attrs = output.prepare_global_attrs()
+        synsat.attrs["input_filename"] = attr.input_filename
 
         self.synsat.output_data = synsat
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys
+import re
 
 import numpy as np
 import xarray as xr
@@ -378,14 +379,21 @@ def open_icon(
         icon3d = xr.merge([icon3dbase, icon3dqmix])
 
     elif flavor == "hamlite":
-        icon_name_props.update({"variable_stack": "pre"})
-        icon_others_name = icon_name_creator(icon_name_props)
-        icon3dpres = xr.open_dataset(icon_others_name, **input_options)
-        icon3dpres = icon3dpres.sel(time=icon3dbase.time, height=icon3dbase.height)
-
         icon_name_props.update({"variable_stack": "cld"})
         icon_others_name = icon_name_creator(icon_name_props)
         icon3dcld = xr.open_dataset(icon_others_name, **input_options)
+
+        time_str_flex = re.sub(r'[0-9]000Z', '????Z', icon_name_props["time_str"])
+        icon_name_props.update({"variable_stack": "pre"})
+
+        icon_others_name = icon_name_creator(
+            {**icon_name_props, "time_str": time_str_flex}
+        )
+        print('...open HAMLite pre file:', icon_others_name)
+        icon3dpres = xr.open_mfdataset(icon_others_name, **input_options)
+        icon3dpres = icon3dpres.sel(
+            time=icon3dbase.time, height=icon3dbase.height, method="nearest"
+        )
 
         icon3d = xr.merge([icon3dbase, icon3dpres, icon3dcld])
 
@@ -417,8 +425,8 @@ def open_icon(
 
     # only select 3d timeslot
     icon2d = icon2d.sel(time=icon3d.time)
-    
-    for hname in 'height', 'height_2':
+
+    for hname in "height", "height_2":
         if hname in icon2d.dims:
             icon2d = icon2d.squeeze(dim=hname)
 
@@ -427,8 +435,8 @@ def open_icon(
 
     # add georef
     if georef is not None:
-        if 'cell' in georef.dims and 'ncells' in icon.dims:
-            georef = georef.rename({'cell': 'ncells'})
+        if "cell" in georef.dims and "ncells" in icon.dims:
+            georef = georef.rename({"cell": "ncells"})
         icon = xr.merge([icon, georef])
 
     # add mask
@@ -436,8 +444,9 @@ def open_icon(
         icon = xr.merge([icon, mask])
 
     # modify variables
-    if "qv" in icon:
-        icon["qv"] = icon["qv"].clip(min=qmin)
+    for qname in ["qv", "q", "hus"]:
+        if qname in icon:
+            icon[qname] = icon[qname].clip(min=qmin)
 
     if "t_g" in icon and "t_s" not in icon:
         icon["t_s"] = icon["t_g"]
@@ -450,7 +459,6 @@ def open_icon(
     elif flavor == "hamlite":
         qtot = icon["clw"] + icon["cli"] + icon["qs"] + icon["qr"] + icon["qg"]
         icon["clc"] = xr.where(qtot > qmin, 1.0, 0.0)
-        
 
     # set correct time object
     if flavor == "ifces2":

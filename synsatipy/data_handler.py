@@ -202,7 +202,11 @@ class DataHandler(object):
         # store selected data
         total_number_of_profiles = selected_input_data.sizes['profile'] 
 
+        self.profile_dimensions = profile_dimensions
+        
         self.input_data_as_profile = selected_input_data
+
+        self.selected_profiles_index = selected_profiles_index
 
         self.total_number_of_profiles = total_number_of_profiles
 
@@ -265,6 +269,8 @@ class DataHandler(object):
         # initialize profile
         nlevels = profs.dims["lev"]
         nprofiles = profs.dims["profile"]
+        print("... [synsat]: preparing", nprofiles, "profiles with", nlevels, "levels each.")
+        
         myProfiles = pyrttov.Profiles(nprofiles, nlevels)
 
         # some util vars

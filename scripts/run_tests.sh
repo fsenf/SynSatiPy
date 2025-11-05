@@ -106,12 +106,29 @@ function run_notebook {
     local notebook=$1
     echo "Running notebook: $notebook"
     
+    # Create the expected output filename for cleanup
+    local notebook_dir=$(dirname "$notebook")
+    local notebook_name=$(basename "$notebook" .ipynb)
+    local output_file="${notebook_dir}/${notebook_name}.nbconvert.ipynb"
+    
     if jupyter nbconvert --execute --to notebook "$notebook"; then
+        # Clean up the generated .nbconvert.ipynb file
+        if [[ -f "$output_file" ]]; then
+            rm "$output_file"
+            if [[ "$VERBOSE" == "true" ]]; then
+                echo "Cleaned up temporary file: $(basename "$output_file")"
+            fi
+        fi
+        
         if [[ "$VERBOSE" == "true" ]]; then
             echo "✓ Notebook $(basename "$notebook") completed successfully"
         fi
         return 0
     else
+        # Clean up the generated file even if execution failed
+        if [[ -f "$output_file" ]]; then
+            rm "$output_file"
+        fi
         echo "❌ Notebook $(basename "$notebook") failed"
         return 1
     fi

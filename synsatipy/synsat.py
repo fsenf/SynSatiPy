@@ -77,9 +77,6 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # set default options
         self.set_default_options(**synsat_kwargs)
 
-        # init field
-        self.synsat.chunked_result = []
-
         # load instrument based on specified instrument
         self.load_instrument(**synsat_kwargs)
 
@@ -588,14 +585,22 @@ class SynSat(SynSatBase):
 
         Parameters
         ----------
+        efficiency_factor : int, optional
+            Multiplicative factor for the number of profiles processed per call when
+            chunked processing is enabled (i.e., when 'chunked' is in kwargs).
+            The actual number of profiles per chunk is calculated as
+            efficiency_factor * NprofsPerCall. Default is 4.
         **kwargs : dict
-            Additional keyword arguments.
+            Additional keyword arguments. If 'chunked' is included in kwargs, the
+            workflow will process data in chunks using the efficiency_factor parameter.
 
         Returns
         -------
         None
 
         """
+        # init results field
+        self.synsat.chunked_result = []
 
         if "chunked" not in kwargs:
             isel = {"profile": slice(0, None)}
@@ -604,8 +609,9 @@ class SynSat(SynSatBase):
         else:
             sdat = self.synsat.data_handler
 
+            efficiency_factor = kwargs.get("efficiency_factor", 4)
             ntot = sdat.total_number_of_profiles
-            nprof_per_call = self.Options.NprofsPerCall
+            nprof_per_call = efficiency_factor * self.Options.NprofsPerCall
 
             if np.mod(ntot, nprof_per_call) == 0:
                 residual = 0
@@ -631,67 +637,63 @@ class SynSat(SynSatBase):
     def extract_output(self):
         """
         Extracts the output data from the RTTOV variables and prepares it for saving.
-        Output data is stored in the synsat.output attribute and have the following structure:
-
-        - The output data is stored in a xarray dataset.
-        - The dataset contains the brightness temperatures for all channels.
-
-        Returns
-        -------
-        synsat : xarray.Dataset
-            The output data.
-
-
         """
-
         attr = self.synsat
+        sdat = attr.data_handler
 
-        # prepare a channels dataset
-        channels = xr.DataArray(
-            data=np.array(attr.channels),
-            dims=[
-                "channel",
-            ],
+        # Get the original stacked data (before masking) for proper unstacking
+        original_stacked = sdat.input_data.stack(profile=sdat.profile_dimensions)
+        selected_indices = sdat.selected_profiles_index
+
+        # Create a full-size result array filled with NaN
+        full_result = np.full((original_stacked.sizes['profile'], len(attr.channels)), np.nan)
+        
+        # Fill in the results at the correct positions
+        full_result[selected_indices, :] = self.synsat.result
+        
+        # Create the DataArray with full coordinates AND attributes preserved
+        channels = xr.DataArray(data=np.array(attr.channels), dims=["channel"])
+
+        btrefl_full = xr.DataArray(
+            data=full_result, 
+            coords={
+                'profile': original_stacked.profile,
+                'channel': channels
+            },
+            dims=['profile', 'channel'],
+            attrs=original_stacked.attrs  # Preserve dataset-level attributes if needed
         )
 
-        # trick: we use input data to start output data
-        indat = attr.data_handler.input_data_as_profile
-        alldat = indat.assign_coords({"channel": channels})
+        # Copy coordinate attributes from original stacked data
+        for coord_name in original_stacked.coords:
+            if coord_name in btrefl_full.coords:
+                btrefl_full.coords[coord_name].attrs = original_stacked.coords[coord_name].attrs
 
-        btrefl = xr.DataArray(
-            data=self.synsat.result, coords=[alldat.profile, alldat.channel]
-        )
-        alldat["btrefl"] = btrefl
+        # Now unstack will work correctly and preserve coordinate attributes
+        btrefl = btrefl_full.unstack()
+        
+        # Start with the original input data structure to preserve coordinate attributes
+        synsat = xr.Dataset()
 
-        btrefl = alldat["btrefl"].unstack()
-
-        synsat = alldat[[]]
+        # Add the satellite data while preserving coordinate attributes
         for ichan, chan_name in enumerate(btrefl.channel.data):
-
-            # set data
+            # Set data
             synsat[chan_name] = btrefl.sel(channel=chan_name)
 
-            # also set meta data
+            # Set variable attributes (not coordinate attributes)
             a = {}
             a["units"] = attr.units[ichan]
             a["long_name"] = "Synsat %s Brightness Temperature at %.1f um" % (
                 attr.instrument,
                 np.float32(chan_name[2:]) / 10.0
             )
-
             synsat[chan_name].attrs = a
 
         del synsat.coords["channel"]
 
-        attr.output = synsat
-
-        # try to write global attrs
-        if True:  # try:
-            synsat.attrs = output.prepare_global_attrs()
-            synsat.attrs["input_filename"] = attr.input_filename
-
-        else:  # except:
-            print("... [synsat]: WARNING: fail to write global attributes")
+        # Write global attrs
+        synsat.attrs = output.prepare_global_attrs()
+        synsat.attrs["input_filename"] = attr.input_filename
 
         self.synsat.output_data = synsat
 

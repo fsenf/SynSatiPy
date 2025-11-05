@@ -585,8 +585,14 @@ class SynSat(SynSatBase):
 
         Parameters
         ----------
+        efficiency_factor : int, optional
+            Multiplicative factor for the number of profiles processed per call when
+            chunked processing is enabled (i.e., when 'chunked' is in kwargs).
+            The actual number of profiles per chunk is calculated as
+            efficiency_factor * NprofsPerCall. Default is 4.
         **kwargs : dict
-            Additional keyword arguments.
+            Additional keyword arguments. If 'chunked' is included in kwargs, the
+            workflow will process data in chunks using the efficiency_factor parameter.
 
         Returns
         -------

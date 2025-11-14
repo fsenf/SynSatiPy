@@ -2,8 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-
 ## [Unreleased]
+
+
+## [1.1.0] - 2025-11-14
+
+### Added
+- MTG-FCI instrument support with 16 spectral channels (0.444-13.30 μm)
+- `load_mtg_fci()` method for FCI configuration
+- Enhanced HAMlite data processing with improved file merging
+- Hurricane-centric data processing support (flavor=ifces2)
+- Comprehensive FCI test coverage
+
+### Changed
+- Extended supported instruments to include "fci" alongside "seviri" and "abi"
+- Improved ICON data input processing with better pattern matching
+- Enhanced test cleanup for notebook output files
+
+### Fixed
+- Critical bugfix: Proper handling of data together with masks in DataHandler
+- FCI channel specifications and wavelength assignments
+- HAMlite file merging operations
+- Removed dead code and unreachable conditional branches
+
 
 ## [1.0.1b] - 2025-08-15
 

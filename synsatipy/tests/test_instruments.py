@@ -8,6 +8,8 @@ from synsat_test import SynSatTest
     {"instrument": "seviri", "msg_number": 3, "channels": (5, 6, 7)},
     # Test ABI with default channels
     {"instrument": "abi", "goes_number": 16, "channels": (13, 14, 15)},
+    # Test FCI with default channels
+    {"instrument": "fci", "mtg_number": 1, "channels": (13, 14, 15)},
 ])
 def test_instrument_workflow(instrument_config):
     """
@@ -30,6 +32,8 @@ def test_instrument_workflow(instrument_config):
         kwargs["synsat_msg_number"] = instrument_config["msg_number"]
     elif instrument == "abi":
         kwargs["synsat_goes_number"] = instrument_config["goes_number"]
+    elif instrument == "fci":
+        kwargs["synsat_mtg_number"] = instrument_config["mtg_number"]
     
     # Initialize SynSatTest with the specified instrument
     s = SynSatTest(**kwargs)
@@ -146,3 +150,46 @@ def test_load_abi_single_channel():
     
     # Check channels attribute contains the right variable
     assert "bt103" in s.synsat.channels
+
+
+def test_load_fci_default_channels():
+    """
+    Tests loading the FCI instrument with default channel list.
+    
+    Verifies that FCI can be loaded without errors and
+    the default channels are set correctly.
+    """
+    # Initialize with FCI instrument
+    s = SynSatTest(synsat_instrument="fci")
+    
+    # Check if instrument was loaded correctly
+    assert s.synsat.instrument == "FCI"
+    
+    # Default channel list for FCI should be (9, 10, 11, 12, 13, 14, 15, 16)
+    
+    assert s.synsat.chan_list_instrument == (9, 10, 11, 12, 13, 14, 15, 16)
+    assert s.synsat.nchan_instrument == 8
+    
+    # Check that coefficient files were found
+    assert "rtcoef_mtg" in s.FileCoef
+
+
+def test_load_fci_single_channel():
+    """
+    Tests loading the FCI instrument with a single channel.
+    
+    Verifies that FCI can be loaded with a custom channel list
+    containing just one channel.
+    """
+    # Initialize with FCI instrument and only channel 14 (10.50 µm - Clean IR Window)
+    s = SynSatTest(synsat_instrument="fci", synsat_channel_list=(14,))
+    
+    # Check if instrument was loaded correctly
+    assert s.synsat.instrument == "FCI"
+    
+    # Custom channel list should be just (14,)
+    assert s.synsat.chan_list_instrument == (14,)
+    assert s.synsat.nchan_instrument == 1
+    
+    # Check channels attribute contains the right variable
+    assert "bt105" in s.synsat.channels

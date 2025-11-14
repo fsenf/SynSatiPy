@@ -122,7 +122,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         None
         """
 
-        implemented_instruments = ["seviri", "abi"]
+        implemented_instruments = ["seviri", "abi", "fci"]
 
 
         # Default to SEVIRI if not specified
@@ -135,6 +135,10 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         elif instrument == "abi":
             # Load GOES-ABI configuration
             self.load_goes_abi(**synsat_kwargs)
+
+        elif instrument == "fci":
+            # Load MTG-FCI configuration
+            self.load_mtg_fci(**synsat_kwargs)
         
         else:
             print(
@@ -284,22 +288,22 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # ABI specifics
         # ================
         abi_allchannel_names = [
-            "ch01",  # 0.47 µm - Blue
-            "ch02",  # 0.64 µm - Red
-            "ch03",  # 0.86 µm - Veggie
-            "ch04",  # 1.37 µm - Cirrus
-            "ch05",  # 1.6 µm - Snow/Ice
-            "ch06",  # 2.2 µm - Cloud Particle Size
-            "ch07",  # 3.9 µm - Shortwave Window
-            "ch08",  # 6.2 µm - Upper-Level Water Vapor
-            "ch09",  # 6.9 µm - Mid-Level Water Vapor
-            "ch10",  # 7.3 µm - Lower-Level Water Vapor
-            "ch11",  # 8.4 µm - Cloud-Top Phase
-            "ch12",  # 9.6 µm - Ozone
-            "ch13",  # 10.3 µm - Clean IR Longwave Window
-            "ch14",  # 11.2 µm - IR Longwave Window
-            "ch15",  # 12.3 µm - Dirty Longwave Window
-            "ch16",  # 13.3 µm - CO2 Longwave
+            "ch01",  # 0.47 μm - Blue
+            "ch02",  # 0.64 μm - Red
+            "ch03",  # 0.86 μm - Veggie
+            "ch04",  # 1.37 μm - Cirrus
+            "ch05",  # 1.6 μm - Snow/Ice
+            "ch06",  # 2.2 μm - Cloud Particle Size
+            "ch07",  # 3.9 μm - Shortwave Window
+            "ch08",  # 6.2 μm - Upper-Level Water Vapor
+            "ch09",  # 6.9 μm - Mid-Level Water Vapor
+            "ch10",  # 7.3 μm - Lower-Level Water Vapor
+            "ch11",  # 8.4 μm - Cloud-Top Phase
+            "ch12",  # 9.6 μm - Ozone
+            "ch13",  # 10.3 μm - Clean IR Longwave Window
+            "ch14",  # 11.2 μm - IR Longwave Window
+            "ch15",  # 12.3 μm - Dirty Longwave Window
+            "ch16",  # 13.3 μm - CO2 Longwave
         ]
         abi_var_names = [
             "rho047",  # Reflectivity channels (1-6)
@@ -351,6 +355,109 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
 
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_goes_{synsat_goes_number}_abi_o3.dat"
+        self.FileCoef = coef_filename
+        print(f"... [synsat] load coefficient file {coef_filename}")
+
+        # save vars to attributes
+        attr.chan_list_instrument = chan_list_instrument
+        attr.nchan_instrument = nchan_instrument
+        attr.coef_filename = coef_filename
+
+        # Load the instruments
+        try:
+            self.loadInst(chan_list_instrument)
+        except self.RttovError as e:
+            sys.stderr.write("Error loading instrument(s): {!s}".format(e))
+            sys.exit(1)
+
+        return
+
+    def load_mtg_fci(self, synsat_mtg_number=1, **synsat_kwargs):
+        """
+        Loads configuration specific for the MTG-FCI instrument.
+
+        Parameters
+        ----------
+        synsat_mtg_number : int
+            MTG satellite number. (Default value = 1)
+        **synsat_kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
+
+        # FCI specifics
+        # ================
+        fci_allchannel_names = [
+            "vis04",   # 0.444 μm - Blue
+            "vis05",   # 0.510 μm - Green
+            "vis06",   # 0.640 μm - Red
+            "vis08",   # 0.865 μm - Vegetation Red Edge
+            "vis09",   # 0.914 μm - Water Vapour
+            "nir13",   # 1.375 μm - Cirrus
+            "nir16",   # 1.610 μm - Snow/Ice/Cloud Phase
+            "nir22",   # 2.250 μm - Aerosol/Cloud Particle Size
+            "ir38",    # 3.80 μm - Hot objects/Fire/Night microphysics
+            "wv63",    # 6.25 μm - Upper-Level Water Vapour
+            "wv73",    # 7.35 μm - Lower-Level Water Vapour
+            "ir87",    # 8.70 μm - Cloud Phase/SO2
+            "ir97",    # 9.66 μm - Ozone
+            "ir105",   # 10.50 μm - Clean IR Window
+            "ir123",   # 12.30 μm - Dirty IR Window
+            "ir133",   # 13.30 μm - CO2
+        ]
+        
+        fci_var_names = [
+            "rho044",  # Reflectivity channels (1-8)
+            "rho051",
+            "rho064",
+            "rho087",
+            "rho091",
+            "rho138",
+            "rho161",
+            "rho225",
+            "bt038",   # Brightness temperature channels (8-16)
+            "bt063",
+            "bt073",
+            "bt087",
+            "bt097",
+            "bt105",
+            "bt123",
+            "bt133",
+        ]
+        fci_var_units = (
+            8 * ["-",] + 8 * ["K",]
+        )
+
+        # MTG-FCI options
+        # ===========
+        # Default to IR and water vapor channels (channels 9-16)
+        default_chan_list = (9, 10, 11, 12, 13, 14, 15, 16)
+        chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
+
+        attr = self.synsat
+        attr.instrument = "FCI"
+
+        subsatellite_lon = synsat_kwargs.get("synsat_subsatellite_lon", 0.0)
+        attr.subsatellite_lon = subsatellite_lon
+
+        chan_index = np.array(chan_list_instrument) - 1
+
+        attr.channels = np.array(fci_var_names)[chan_index]
+        attr.units = np.array(fci_var_units)[chan_index]
+        nchan_instrument = len(chan_list_instrument)
+
+        # check if solar channel are included
+        attr.solar_calculations = np.any(np.array(chan_list_instrument) < 9)
+
+        # Add cloud opt. props file
+        cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_mtg_{synsat_mtg_number}_fci.dat"
+        self.FileSccld = cldaer_filename
+        print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
+
+        coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_mtg_{synsat_mtg_number}_fci_o3.dat"
         self.FileCoef = coef_filename
         print(f"... [synsat] load coefficient file {coef_filename}")
 
@@ -444,7 +551,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             if attr.solar_calculations:
                 surfemisrefl_seviri[1, :, :] = brdfAtlas.getEmisBrdf(self)
 
-        except pyrttov.RttovError as e:
+        except self.RttovError as e:
             # If there was an error the emissivities/BRDFs will not have been modified so it
             # is OK to continue and call RTTOV with calcemis/calcrefl set to TRUE everywhere
             sys.stderr.write("Error calling atlas: {!s}".format(e))

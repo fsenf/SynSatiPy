@@ -394,8 +394,15 @@ def open_icon(
         icon3dpres = icon3dpres.sel(
             time=icon3dbase.time, height=icon3dbase.height, method="nearest"
         )
+        # Explicitly reassign the time coordinate to ensure alignment with icon3dbase.
+        # This is necessary because the HAMLite data format or the sel operation may result
+        # in a time coordinate mismatch or ambiguity that is not resolved automatically.
+        icon3dpres['time'] = icon3dbase.time
 
         icon3d = xr.merge([icon3dbase, icon3dpres, icon3dcld])
+
+        if len(icon3d.time) > 1:
+            icon3d = icon3d.isel(time=[0,])
 
     # open surfacer props
     if flavor == "ifces2":
@@ -431,7 +438,7 @@ def open_icon(
             icon2d = icon2d.squeeze(dim=hname)
 
     # merge dataset
-    icon = xr.merge([icon2d, icon3d])
+    icon = xr.merge([icon2d, icon3d], compat="override")
 
     # add georef
     if georef is not None:

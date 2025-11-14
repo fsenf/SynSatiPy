@@ -166,10 +166,6 @@ def test_load_fci_default_channels():
     assert s.synsat.instrument == "FCI"
     
     # Default channel list for FCI should be (9, 10, 11, 12, 13, 14, 15, 16)
-    print( s.synsat.chan_list_instrument )
-    print( (9, 10, 11, 12, 13, 14, 15, 16) )
-    print( s.synsat.nchan_instrument )
-    print( 8 )
     
     assert s.synsat.chan_list_instrument == (9, 10, 11, 12, 13, 14, 15, 16)
     assert s.synsat.nchan_instrument == 8

@@ -394,6 +394,9 @@ def open_icon(
         icon3dpres = icon3dpres.sel(
             time=icon3dbase.time, height=icon3dbase.height, method="nearest"
         )
+        # Explicitly reassign the time coordinate to ensure alignment with icon3dbase.
+        # This is necessary because the HAMLite data format or the sel operation may result
+        # in a time coordinate mismatch or ambiguity that is not resolved automatically.
         icon3dpres['time'] = icon3dbase.time
 
         icon3d = xr.merge([icon3dbase, icon3dpres, icon3dcld])

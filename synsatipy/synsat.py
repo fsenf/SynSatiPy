@@ -288,22 +288,22 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # ABI specifics
         # ================
         abi_allchannel_names = [
-            "ch01",  # 0.47 µm - Blue
-            "ch02",  # 0.64 µm - Red
-            "ch03",  # 0.86 µm - Veggie
-            "ch04",  # 1.37 µm - Cirrus
-            "ch05",  # 1.6 µm - Snow/Ice
-            "ch06",  # 2.2 µm - Cloud Particle Size
-            "ch07",  # 3.9 µm - Shortwave Window
-            "ch08",  # 6.2 µm - Upper-Level Water Vapor
-            "ch09",  # 6.9 µm - Mid-Level Water Vapor
-            "ch10",  # 7.3 µm - Lower-Level Water Vapor
-            "ch11",  # 8.4 µm - Cloud-Top Phase
-            "ch12",  # 9.6 µm - Ozone
-            "ch13",  # 10.3 µm - Clean IR Longwave Window
-            "ch14",  # 11.2 µm - IR Longwave Window
-            "ch15",  # 12.3 µm - Dirty Longwave Window
-            "ch16",  # 13.3 µm - CO2 Longwave
+            "ch01",  # 0.47 μm - Blue
+            "ch02",  # 0.64 μm - Red
+            "ch03",  # 0.86 μm - Veggie
+            "ch04",  # 1.37 μm - Cirrus
+            "ch05",  # 1.6 μm - Snow/Ice
+            "ch06",  # 2.2 μm - Cloud Particle Size
+            "ch07",  # 3.9 μm - Shortwave Window
+            "ch08",  # 6.2 μm - Upper-Level Water Vapor
+            "ch09",  # 6.9 μm - Mid-Level Water Vapor
+            "ch10",  # 7.3 μm - Lower-Level Water Vapor
+            "ch11",  # 8.4 μm - Cloud-Top Phase
+            "ch12",  # 9.6 μm - Ozone
+            "ch13",  # 10.3 μm - Clean IR Longwave Window
+            "ch14",  # 11.2 μm - IR Longwave Window
+            "ch15",  # 12.3 μm - Dirty Longwave Window
+            "ch16",  # 13.3 μm - CO2 Longwave
         ]
         abi_var_names = [
             "rho047",  # Reflectivity channels (1-6)
@@ -391,26 +391,26 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # FCI specifics
         # ================
         fci_allchannel_names = [
-            "vis04",   # 0.444 µm - Blue
-            "vis05",   # 0.510 µm - Green
-            "vis06",   # 0.640 µm - Red
-            "vis08",   # 0.865 µm - Vegetation Red Edge
-            "vis09",   # 0.914 µm - Water Vapour
-            "nir13",   # 1.375 µm - Cirrus
-            "nir16",   # 1.610 µm - Snow/Ice/Cloud Phase
-            "nir22",   # 2.250 µm - Aerosol/Cloud Particle Size
-            "ir38",    # 3.80 µm - Hot objects/Fire/Night microphysics
-            "wv63",    # 6.25 µm - Upper-Level Water Vapour
-            "wv69",    # 6.95 µm - Mid-Level Water Vapour  
-            "wv73",    # 7.35 µm - Lower-Level Water Vapour
-            "ir87",    # 8.70 µm - Cloud Phase/SO2
-            "ir97",    # 9.66 µm - Ozone
-            "ir105",   # 10.50 µm - Clean IR Window
-            "ir123",   # 12.30 µm - Dirty IR Window
-            "ir133",   # 13.30 µm - CO2
+            "vis04",   # 0.444 μm - Blue
+            "vis05",   # 0.510 μm - Green
+            "vis06",   # 0.640 μm - Red
+            "vis08",   # 0.865 μm - Vegetation Red Edge
+            "vis09",   # 0.914 μm - Water Vapour
+            "nir13",   # 1.375 μm - Cirrus
+            "nir16",   # 1.610 μm - Snow/Ice/Cloud Phase
+            "nir22",   # 2.250 μm - Aerosol/Cloud Particle Size
+            "ir38",    # 3.80 μm - Hot objects/Fire/Night microphysics
+            "wv63",    # 6.25 μm - Upper-Level Water Vapour
+            "wv73",    # 7.35 μm - Lower-Level Water Vapour
+            "ir87",    # 8.70 μm - Cloud Phase/SO2
+            "ir97",    # 9.66 μm - Ozone
+            "ir105",   # 10.50 μm - Clean IR Window
+            "ir123",   # 12.30 μm - Dirty IR Window
+            "ir133",   # 13.30 μm - CO2
         ]
+        
         fci_var_names = [
-            "rho044",  # Reflectivity channels (1-8)
+            "rho044",  # Reflectivity channels (1-7)
             "rho051",
             "rho064",
             "rho087",
@@ -418,9 +418,8 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "rho138",
             "rho161",
             "rho225",
-            "bt038",   # Brightness temperature channels (9-17)
+            "bt038",   # Brightness temperature channels (8-16)
             "bt063",
-            "bt069",
             "bt073",
             "bt087",
             "bt097",
@@ -428,15 +427,14 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "bt123",
             "bt133",
         ]
-
         fci_var_units = (
-            8 * ["-",] + 9 * ["K",]
+            8 * ["-",] + 8 * ["K",]
         )
 
         # MTG-FCI options
         # ===========
-        # Default to IR and water vapor channels (channels 9-17)
-        default_chan_list = [9, 10, 11, 12, 13, 14, 15, 16, 17]
+        # Default to IR and water vapor channels (channels 9-16)
+        default_chan_list = (9, 10, 11, 12, 13, 14, 15, 16)
         chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
 
         attr = self.synsat
@@ -553,7 +551,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             if attr.solar_calculations:
                 surfemisrefl_seviri[1, :, :] = brdfAtlas.getEmisBrdf(self)
 
-        except pyrttov.RttovError as e:
+        except self.RttovError as e:
             # If there was an error the emissivities/BRDFs will not have been modified so it
             # is OK to continue and call RTTOV with calcemis/calcrefl set to TRUE everywhere
             sys.stderr.write("Error calling atlas: {!s}".format(e))

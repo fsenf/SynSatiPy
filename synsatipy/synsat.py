@@ -410,7 +410,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         ]
         
         fci_var_names = [
-            "rho044",  # Reflectivity channels (1-7)
+            "rho044",  # Reflectivity channels (1-8)
             "rho051",
             "rho064",
             "rho087",

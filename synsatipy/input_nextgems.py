@@ -40,11 +40,17 @@ def open_ngdataset(cat_path, **kwargs):
     """
 
     zoom = kwargs.get("zoom", 9)
+    simulation_name = kwargs.get("simulation_name", "ngc4008a")
 
     cat = intake.open_catalog(cat_path)
 
+    if simulation_name == 'ngc4008a':
+        frequency = 'PT15M'
+    else:
+        frequency = 'P1D'   
+
     dset = (
-        cat.ICON.ngc4008a(zoom=zoom, time="PT15M")  # chunks="auto",
+        cat.ICON[simulation_name](zoom=zoom, time=frequency)  # chunks="auto",
         .to_dask()
         .pipe(attach_coords)
     )
@@ -268,7 +274,7 @@ def open_nextgems(cat_path, name_remapping=True, **kwargs):
 
     dset["clc"] = xr.where(q_tot < q_tot_thresh, O, I)
 
-    dset = dset.transpose("time", "cell", "level_full", "level_half")
+    dset = dset.transpose("time", "cell", "level_full", "level_half", ...)
 
     if name_remapping:
         return nextgems_variable_mapping(dset)

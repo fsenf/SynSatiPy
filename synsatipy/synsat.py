@@ -122,7 +122,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         None
         """
 
-        implemented_instruments = ["seviri", "abi", "fci"]
+        implemented_instruments = ["seviri", "abi", "fci", "modis"]
 
 
         # Default to SEVIRI if not specified
@@ -139,7 +139,11 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         elif instrument == "fci":
             # Load MTG-FCI configuration
             self.load_mtg_fci(**synsat_kwargs)
-        
+
+        elif instrument == "modis":
+            # Load EOS-MODIS configuration
+            self.load_eos_modis(**synsat_kwargs)
+
         else:
             print(
                 f"... [synsat] WARNING: {instrument} is not a valid instrument. "
@@ -467,6 +471,129 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         attr.coef_filename = coef_filename
 
         # Load the instruments
+        try:
+            self.loadInst(chan_list_instrument)
+        except self.RttovError as e:
+            sys.stderr.write("Error loading instrument(s): {!s}".format(e))
+            sys.exit(1)
+
+        return
+
+    def load_eos_modis(self, synsat_modis_satellite="terra", **synsat_kwargs):
+        """
+        Loads configuration specific for the EOS-MODIS instrument.
+
+        Parameters
+        ----------
+        synsat_modis_satellite : str
+            EOS satellite name, either 'terra' (EOS-1) or 'aqua' (EOS-2).
+            (Default value = 'terra')
+        **synsat_kwargs : dict
+            Additional keyword arguments.
+
+        Returns
+        -------
+        None
+        """
+
+        # Map satellite name to EOS number
+        satellite_map = {"terra": 1, "aqua": 2}
+        satellite_name = synsat_kwargs.get("synsat_modis_satellite", synsat_modis_satellite).lower()
+        if satellite_name not in satellite_map:
+            raise ValueError(
+                f"Unknown MODIS satellite '{satellite_name}'. "
+                f"Supported values are: {list(satellite_map.keys())}"
+            )
+        eos_number = satellite_map[satellite_name]
+
+        # MODIS channel definitions (bands 1-36)
+        # Bands 1-19: reflective solar (VIS/NIR, 0.4-2.2 µm)
+        # Bands 20-36: thermal emissive (3.7-14.4 µm), except band 26 (1.38 µm, solar)
+        modis_var_names = [
+            # rho: centre_µm × 100, 3-digit zero-padded
+            "rho064",  #  1 - 620-670 nm   (0.645µm → 64)
+            "rho086",  #  2 - 841-876 nm   (0.859µm → 86)
+            "rho047",  #  3 - 459-479 nm   (0.469µm → 47)
+            "rho056",  #  4 - 545-565 nm   (0.555µm → 56)
+            "rho124",  #  5 - 1230-1250 nm (1.240µm → 124)
+            "rho164",  #  6 - 1628-1652 nm (1.640µm → 164)
+            "rho213",  #  7 - 2105-2155 nm (2.130µm → 213)
+            "rho041",  #  8 - 405-420 nm   (0.413µm → 41)
+            "rho044",  #  9 - 438-448 nm   (0.443µm → 44)
+            "rho046",  # 10 - 438-493 nm   (0.466µm → 46, floor to avoid clash with band 3)
+            "rho053",  # 11 - 526-536 nm   (0.531µm → 53)
+            "rho055",  # 12 - 546-556 nm   (0.551µm → 55)
+            "rho067",  # 13 - 662-672 nm   (0.667µm → 67)
+            "rho068",  # 14 - 673-683 nm   (0.678µm → 68)
+            "rho075",  # 15 - 743-753 nm   (0.748µm → 75)
+            "rho087",  # 16 - 862-877 nm   (0.870µm → 87)
+            "rho091",  # 17 - 890-920 nm   (0.905µm → 91)
+            "rho093",  # 18 - 931-941 nm   (0.936µm → 93, floor to avoid clash with band 19)
+            "rho094",  # 19 - 915-965 nm   (0.940µm → 94)
+            # bt: centre_µm × 10, 3-digit zero-padded
+            "bt038",   # 20 - 3.660-3.840 µm (3.750µm → 038)
+            "bt039",   # 21 - 3.929-3.989 µm (fire channel; floor to avoid clash with band 22)
+            "bt040",   # 22 - 3.929-3.989 µm (3.959µm → 040)
+            "bt041",   # 23 - 4.020-4.080 µm (4.050µm → 041)
+            "bt045",   # 24 - 4.433-4.498 µm (4.466µm → 045)
+            "bt046",   # 25 - 4.482-4.549 µm (4.516µm → 046, ceil to avoid clash with band 24)
+            "rho138",  # 26 - 1.360-1.390 µm (1.375µm → 138, cirrus solar channel)
+            "bt067",   # 27 - 6.535-6.895 µm (6.715µm → 067)
+            "bt073",   # 28 - 7.175-7.475 µm (7.325µm → 073)
+            "bt086",   # 29 - 8.400-8.700 µm (8.550µm → 086)
+            "bt097",   # 30 - 9.580-9.880 µm (9.730µm → 097, ozone)
+            "bt110",   # 31 - 10.780-11.280 µm (11.030µm → 110)
+            "bt120",   # 32 - 11.770-12.270 µm (12.020µm → 120)
+            "bt133",   # 33 - 13.185-13.485 µm (13.335µm → 133)
+            "bt136",   # 34 - 13.485-13.785 µm (13.635µm → 136)
+            "bt139",   # 35 - 13.785-14.085 µm (13.935µm → 139)
+            "bt142",   # 36 - 14.085-14.385 µm (14.235µm → 142)
+        ]
+
+        modis_var_units = (
+            19 * ["-"] +   # bands 1-19: reflective
+            6  * ["K"]  +  # bands 20-25: thermal
+            ["-"]       +  # band  26: solar (cirrus)
+            9  * ["K"]     # bands 27-36: thermal
+        )
+
+        # Default channel list: key thermal/WV bands analogous to other instruments
+        default_chan_list = (20, 22, 27, 28, 29, 31, 32, 33)
+        chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
+
+        attr = self.synsat
+        attr.instrument = f"MODIS ({satellite_name.capitalize()})"
+
+        # MODIS is polar-orbiting — subsatellite_lon is not physically meaningful
+        # but kept as a dummy for interface compatibility
+        subsatellite_lon = synsat_kwargs.get("synsat_subsatellite_lon", None)
+        attr.subsatellite_lon = subsatellite_lon
+
+        chan_index = np.array(chan_list_instrument) - 1
+
+        attr.channels = np.array(modis_var_names)[chan_index]
+        attr.units = np.array(modis_var_units)[chan_index]
+        nchan_instrument = len(chan_list_instrument)
+
+        # Solar channels: bands 1-19 are always solar; band 26 (index 25) is also solar
+        solar_indices = set(range(1, 20)) | {26}
+        attr.solar_calculations = any(ch in solar_indices for ch in chan_list_instrument)
+
+        # Coefficient files
+        cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_eos_{eos_number}_modis.dat"
+        self.FileSccld = cldaer_filename
+        print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
+
+        coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_eos_{eos_number}_modis_o3.dat"
+        self.FileCoef = coef_filename
+        print(f"... [synsat] load coefficient file {coef_filename}")
+
+        # Save vars to attributes
+        attr.chan_list_instrument = chan_list_instrument
+        attr.nchan_instrument = nchan_instrument
+        attr.coef_filename = coef_filename
+
+        # Load the instrument
         try:
             self.loadInst(chan_list_instrument)
         except self.RttovError as e:

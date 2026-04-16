@@ -10,6 +10,10 @@ from synsat_test import SynSatTest
     {"instrument": "abi", "goes_number": 16, "channels": (13, 14, 15)},
     # Test FCI with default channels
     {"instrument": "fci", "mtg_number": 1, "channels": (13, 14, 15)},
+    # Test MODIS/Terra with default channels
+    {"instrument": "modis", "modis_satellite": "terra", "channels": (31, 32, 33)},
+    # Test MODIS/Aqua with default channels
+    {"instrument": "modis", "modis_satellite": "aqua", "channels": (31, 32, 33)},
 ])
 def test_instrument_workflow(instrument_config):
     """
@@ -34,12 +38,15 @@ def test_instrument_workflow(instrument_config):
         kwargs["synsat_goes_number"] = instrument_config["goes_number"]
     elif instrument == "fci":
         kwargs["synsat_mtg_number"] = instrument_config["mtg_number"]
+    elif instrument == "modis":
+        kwargs["synsat_modis_satellite"] = instrument_config["modis_satellite"]
     
     # Initialize SynSatTest with the specified instrument
     s = SynSatTest(**kwargs)
     
     # Verify instrument was loaded correctly
-    assert s.synsat.instrument.upper() == instrument.upper()
+    # Note: MODIS sets instrument to e.g. "MODIS (Terra)" so use startswith
+    assert s.synsat.instrument.upper().startswith(instrument.upper())
     
     # Verify channels configuration
     assert s.synsat.chan_list_instrument == channels
@@ -193,3 +200,63 @@ def test_load_fci_single_channel():
     
     # Check channels attribute contains the right variable
     assert "bt105" in s.synsat.channels
+
+
+def test_load_modis_terra_default_channels():
+    """
+    Tests loading the MODIS instrument on Terra with default channel list.
+
+    Verifies that MODIS/Terra can be loaded without errors and
+    the default channels are set correctly.
+    """
+    s = SynSatTest(synsat_instrument="modis", synsat_modis_satellite="terra")
+
+    # Check instrument name includes Terra
+    assert s.synsat.instrument == "MODIS (Terra)"
+
+    # Default channel list for MODIS should be (20, 22, 27, 28, 29, 31, 32, 33)
+    assert s.synsat.chan_list_instrument == (20, 22, 27, 28, 29, 31, 32, 33)
+    assert s.synsat.nchan_instrument == 8
+
+    # Check that coefficient files reference eos_1
+    assert "rtcoef_eos_1_modis" in s.FileCoef
+    assert "sccldcoef_eos_1_modis" in s.FileSccld
+
+
+def test_load_modis_aqua_default_channels():
+    """
+    Tests loading the MODIS instrument on Aqua with default channel list.
+
+    Verifies that MODIS/Aqua can be loaded without errors and
+    the default channels are set correctly.
+    """
+    s = SynSatTest(synsat_instrument="modis", synsat_modis_satellite="aqua")
+
+    # Check instrument name includes Aqua
+    assert s.synsat.instrument == "MODIS (Aqua)"
+
+    # Default channel list for MODIS should be (20, 22, 27, 28, 29, 31, 32, 33)
+    assert s.synsat.chan_list_instrument == (20, 22, 27, 28, 29, 31, 32, 33)
+    assert s.synsat.nchan_instrument == 8
+
+    # Check that coefficient files reference eos_2
+    assert "rtcoef_eos_2_modis" in s.FileCoef
+    assert "sccldcoef_eos_2_modis" in s.FileSccld
+
+
+def test_load_modis_single_channel():
+    """
+    Tests loading the MODIS instrument with a single thermal window channel.
+
+    Verifies that MODIS can be loaded with a custom channel list
+    containing just one channel.
+    """
+    # Channel 31 - 10.780-11.280 µm - Surface/Cloud Temperature
+    s = SynSatTest(synsat_instrument="modis", synsat_channel_list=(31,))
+
+    assert s.synsat.instrument.startswith("MODIS")
+    assert s.synsat.chan_list_instrument == (31,)
+    assert s.synsat.nchan_instrument == 1
+
+    # bt110 corresponds to band 31 (11.03 µm → 110)
+    assert "bt110" in s.synsat.channels

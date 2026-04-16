@@ -300,7 +300,12 @@ class DataHandler(object):
 
         # get satellite angles
         lon, lat = profs["lon"].data, profs["lat"].data
-        azi, zen = lonlat2azizen(lon, lat, lon0=lon0)
+        if lon0 is not None:
+            azi, zen = lonlat2azizen(lon, lat, lon0=lon0)
+        else:
+            # currently we treat all positions as nadir viewing, so set angles to zero
+            print("... [synsat]: no satellite longitude provided, treating all positions as nadir viewing.")
+            azi, zen = 0*lon, 0*lat
 
         # set max zen angle
         zen = np.clip(zen, 0, 80)

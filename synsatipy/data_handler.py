@@ -186,7 +186,6 @@ class DataHandler(object):
 
         # stack the full data array
         stacked_input_data = self.input_data.stack(profile=profile_dimensions)
-#        stacked_input_data = stacked_input_data.chunk('auto') 
 
         full_index = np.arange(stacked_input_data.sizes['profile'])
 

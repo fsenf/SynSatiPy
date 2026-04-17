@@ -29,6 +29,11 @@ def open_ngdataset(cat_path, **kwargs):
     zoom : int, optional
         Zoom level. Default is 9.
 
+    simulation_name : str, optional
+        Name of the nextGEMS simulation to open. Default is ``"ngc4008a"``.
+        The output frequency is selected automatically based on the simulation:
+        ``"PT15M"`` for ``"ngc4008a"``, and ``"P1D"`` for all other simulations.
+
     Returns
     -------
     dset : xarray.Dataset

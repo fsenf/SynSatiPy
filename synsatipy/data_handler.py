@@ -277,16 +277,26 @@ class DataHandler(object):
         zeros = np.zeros_like(profs["p"].data.T)
         ones = zeros[:, :1] + 1
 
-        
+        # get pressure and define order
+        p = profs["p"].data.T * 1e-2  # in hPa
+
+        p_last_profile = p[-1, :]
+
+        if p_last_profile[0] < p_last_profile[-1]:
+            order = 'top-to-bottom'
+        else:
+            order = 'bottom-to-top'
+
+
         # fill profile
         q = profs["q"].data.T
         Temp =  profs["t"].data.T
 
         Temp = np.clip(Temp, 100, 400) 
 
-        myProfiles.P = profs["p"].data.T * 1e-2  # in hPa
-        myProfiles.T = Temp # gas_units = 1 => kg/kg over moist air (default)
-        myProfiles.Q = q
+        myProfiles.P = p
+        myProfiles.T = Temp 
+        myProfiles.Q = q # gas_units = 1 => kg/kg over moist air (default)
 
         # get satellite angles
         lon, lat = profs["lon"].data, profs["lat"].data
@@ -312,7 +322,12 @@ class DataHandler(object):
         T2m = np.expand_dims(profs["T2M"], axis=1)
         T2m = np.clip(T2m, 200, 400) 
 
-        q2m = np.expand_dims(q[:, 0], axis=1)  # only dew point there
+        if order == 'bottom-to-top':
+            q2m = np.expand_dims(q[:, 0], axis=1)  # only dew point there
+        elif order == 'top-to-bottom':
+            q2m = np.expand_dims(q[:, -1], axis=1)  # only dew point there
+
+        
 
         myProfiles.S2m = np.hstack([ps2m, T2m, q2m, zeros[:, :3]])
 

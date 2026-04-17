@@ -44,10 +44,10 @@ def open_ngdataset(cat_path, **kwargs):
 
     cat = intake.open_catalog(cat_path)
 
-    if simulation_name == 'ngc4008a':
-        frequency = 'PT15M'
+    if simulation_name == "ngc4008a":
+        frequency = "PT15M"
     else:
-        frequency = 'P1D'   
+        frequency = "P1D"
 
     dset = (
         cat.ICON[simulation_name](zoom=zoom, time=frequency)  # chunks="auto",

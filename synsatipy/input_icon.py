@@ -145,6 +145,10 @@ def icon_name_creator(icon_name_props):
         icon_name = "{fullpath}/{domain}_{model_component}_{data_type}_{variable_stack}_{level_type}_{time_str}.nc".format(
             **icon_name_props
         )
+    elif flavor == "hamlite-aerosols":
+        icon_name = "{fullpath}/hamlite_trc_{data_type}_{level_type}_{time_str}.nc".format(
+            **icon_name_props
+        )
 
     return icon_name
 
@@ -332,6 +336,8 @@ def open_icon(
 
     """
 
+    use_aerosols = kwargs.get("use_aerosols", False)
+
     if geofile is not None:
         georef = read_georef(geofile)
     else:
@@ -471,6 +477,39 @@ def open_icon(
     if flavor == "ifces2":
         t = timetools.convert_timevec(icon.time.data)
         icon = icon.assign_coords({"time": t})
+
+    if flavor == "hamlite" and use_aerosols:
+        # HAMLite time is in seconds since 1970-01-01, but icon3dbase.time is already in datetime64[ns]
+        # so we can directly assign it without conversion.
+        print('... transforming and adding aerosols to HAMLite dataset')
+
+        icon_name_props.update(
+            {
+                "data_type": "3d",
+                "flavor": "hamlite-aerosols"            
+            }
+        )
+        icon_aerosol_name = icon_name_creator( icon_name_props )
+        icon_aerosol = xr.open_dataset(icon_aerosol_name, **input_options)
+
+        # select base time
+        icon_aerosol = icon_aerosol.sel(
+            time=icon.time, method="nearest"
+        )
+
+        # only select aerosol variables
+        aerosol_varlist = []
+        for vname in icon_aerosol.data_vars:
+            if 'num' in vname:
+                aerosol_varlist += [ vname,]
+
+        icon_aerosol = icon_aerosol[aerosol_varlist]
+
+        print(icon_aerosol.time)
+        print(icon.time)
+
+
+        icon = xr.merge([icon, icon_aerosol], compat="override")
 
     if name_remapping:
         return icon_variable_mapping(icon, flavor=flavor, always_keep=always_keep)

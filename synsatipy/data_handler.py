@@ -142,7 +142,8 @@ class DataHandler(object):
         """
         isel = kwargs.pop("isel", None)
         lon0 = kwargs.pop("lon0", 0.0)
-
+        use_aerosols = kwargs.pop("use_aerosols", False)
+            
         if self.model == "auto":
             model = autodetect_model_by_filename(filename)
         else:
@@ -156,8 +157,7 @@ class DataHandler(object):
 
         elif model == "icon":
             #            from input_icon import open_icon
-
-            indat = input_icon.open_icon(filename, **kwargs)
+            indat = input_icon.open_icon(filename, use_aerosols=use_aerosols, **kwargs)
 
         elif model == "nextgems":
             #            from input_icon import open_icon
@@ -253,6 +253,9 @@ class DataHandler(object):
             snow_factor = kwargs["synsat_snow_factor"]
         else:
             use_snow_factor = False
+
+        use_aerosols = kwargs.get("synsat_use_aerosols", False)
+        aerosol_species = kwargs.get("synsat_aerosol_species", {})
 
         lon0 = kwargs.pop("lon0", 0.0)
 

@@ -106,6 +106,23 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         self.synsat.nprofiles = None
 
+        # aerosol options
+        use_aerosols = synsat_kwargs.get("synsat_use_aerosols", False)
+        self.Options.AddAerosl = use_aerosols
+        self.synsat.use_aerosols = use_aerosols
+        # maps hamlite variable names -> RTTOV aerosol gas IDs
+        # see RTTOV user guide table of gas/aerosol IDs
+        self.synsat.aerosol_species = synsat_kwargs.get(
+            "synsat_aerosol_species",
+            {
+                "aer_so4": 41,  # sulphate
+                "aer_bc": 42,  # black carbon
+                "aer_oc": 43,  # organic carbon
+                "aer_du1": 47,  # mineral dust (coarse)
+                "aer_ss1": 51,  # sea salt (coarse)
+            },
+        )
+
         return
 
     def load_instrument(self, **synsat_kwargs):
@@ -123,7 +140,6 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         """
 
         implemented_instruments = ["seviri", "abi", "fci", "modis"]
-
 
         # Default to SEVIRI if not specified
         instrument = synsat_kwargs.get("synsat_instrument", "seviri").lower()
@@ -316,7 +332,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "rho137",
             "rho160",
             "rho220",
-            "bt039",   # Brightness temperature channels (7-16)
+            "bt039",  # Brightness temperature channels (7-16)
             "bt062",
             "bt069",
             "bt073",
@@ -328,20 +344,24 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "bt133",
         ]
 
-        abi_var_units = (
-            6 * ["-",] + 10 * ["K",]
-        )
+        abi_var_units = 6 * [
+            "-",
+        ] + 10 * [
+            "K",
+        ]
 
         # GOES-ABI options
         # ===========
         # Default to IR channels (channels 7-16)
         default_chan_list = (7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
-        chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
+        chan_list_instrument = synsat_kwargs.get(
+            "synsat_channel_list", default_chan_list
+        )
 
         attr = self.synsat
         attr.instrument = "ABI"
 
-        subsatellite_lon = synsat_kwargs.get("synsat_subsatellite_lon",  -75.2)
+        subsatellite_lon = synsat_kwargs.get("synsat_subsatellite_lon", -75.2)
         attr.subsatellite_lon = subsatellite_lon
 
         chan_index = np.array(chan_list_instrument) - 1
@@ -395,24 +415,24 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         # FCI specifics
         # ================
         fci_allchannel_names = [
-            "vis04",   # 0.444 μm - Blue
-            "vis05",   # 0.510 μm - Green
-            "vis06",   # 0.640 μm - Red
-            "vis08",   # 0.865 μm - Vegetation Red Edge
-            "vis09",   # 0.914 μm - Water Vapour
-            "nir13",   # 1.375 μm - Cirrus
-            "nir16",   # 1.610 μm - Snow/Ice/Cloud Phase
-            "nir22",   # 2.250 μm - Aerosol/Cloud Particle Size
-            "ir38",    # 3.80 μm - Hot objects/Fire/Night microphysics
-            "wv63",    # 6.25 μm - Upper-Level Water Vapour
-            "wv73",    # 7.35 μm - Lower-Level Water Vapour
-            "ir87",    # 8.70 μm - Cloud Phase/SO2
-            "ir97",    # 9.66 μm - Ozone
-            "ir105",   # 10.50 μm - Clean IR Window
-            "ir123",   # 12.30 μm - Dirty IR Window
-            "ir133",   # 13.30 μm - CO2
+            "vis04",  # 0.444 μm - Blue
+            "vis05",  # 0.510 μm - Green
+            "vis06",  # 0.640 μm - Red
+            "vis08",  # 0.865 μm - Vegetation Red Edge
+            "vis09",  # 0.914 μm - Water Vapour
+            "nir13",  # 1.375 μm - Cirrus
+            "nir16",  # 1.610 μm - Snow/Ice/Cloud Phase
+            "nir22",  # 2.250 μm - Aerosol/Cloud Particle Size
+            "ir38",  # 3.80 μm - Hot objects/Fire/Night microphysics
+            "wv63",  # 6.25 μm - Upper-Level Water Vapour
+            "wv73",  # 7.35 μm - Lower-Level Water Vapour
+            "ir87",  # 8.70 μm - Cloud Phase/SO2
+            "ir97",  # 9.66 μm - Ozone
+            "ir105",  # 10.50 μm - Clean IR Window
+            "ir123",  # 12.30 μm - Dirty IR Window
+            "ir133",  # 13.30 μm - CO2
         ]
-        
+
         fci_var_names = [
             "rho044",  # Reflectivity channels (1-8)
             "rho051",
@@ -422,7 +442,7 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "rho138",
             "rho161",
             "rho225",
-            "bt038",   # Brightness temperature channels (8-16)
+            "bt038",  # Brightness temperature channels (8-16)
             "bt063",
             "bt073",
             "bt087",
@@ -431,15 +451,19 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "bt123",
             "bt133",
         ]
-        fci_var_units = (
-            8 * ["-",] + 8 * ["K",]
-        )
+        fci_var_units = 8 * [
+            "-",
+        ] + 8 * [
+            "K",
+        ]
 
         # MTG-FCI options
         # ===========
         # Default to IR and water vapor channels (channels 9-16)
         default_chan_list = (9, 10, 11, 12, 13, 14, 15, 16)
-        chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
+        chan_list_instrument = synsat_kwargs.get(
+            "synsat_channel_list", default_chan_list
+        )
 
         attr = self.synsat
         attr.instrument = "FCI"
@@ -498,7 +522,9 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         # Map satellite name to EOS number
         satellite_map = {"terra": 1, "aqua": 2}
-        satellite_name = synsat_kwargs.get("synsat_modis_satellite", synsat_modis_satellite).lower()
+        satellite_name = synsat_kwargs.get(
+            "synsat_modis_satellite", synsat_modis_satellite
+        ).lower()
         if satellite_name not in satellite_map:
             raise ValueError(
                 f"Unknown MODIS satellite '{satellite_name}'. "
@@ -531,35 +557,37 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
             "rho093",  # 18 - 931-941 nm   (0.936µm → 93, floor to avoid clash with band 19)
             "rho094",  # 19 - 915-965 nm   (0.940µm → 94)
             # bt: centre_µm × 10, 3-digit zero-padded
-            "bt038",   # 20 - 3.660-3.840 µm (3.750µm → 038)
-            "bt039",   # 21 - 3.929-3.989 µm (fire channel; floor to avoid clash with band 22)
-            "bt040",   # 22 - 3.929-3.989 µm (3.959µm → 040)
-            "bt041",   # 23 - 4.020-4.080 µm (4.050µm → 041)
-            "bt045",   # 24 - 4.433-4.498 µm (4.466µm → 045)
-            "bt046",   # 25 - 4.482-4.549 µm (4.516µm → 046, ceil to avoid clash with band 24)
+            "bt038",  # 20 - 3.660-3.840 µm (3.750µm → 038)
+            "bt039",  # 21 - 3.929-3.989 µm (fire channel; floor to avoid clash with band 22)
+            "bt040",  # 22 - 3.929-3.989 µm (3.959µm → 040)
+            "bt041",  # 23 - 4.020-4.080 µm (4.050µm → 041)
+            "bt045",  # 24 - 4.433-4.498 µm (4.466µm → 045)
+            "bt046",  # 25 - 4.482-4.549 µm (4.516µm → 046, ceil to avoid clash with band 24)
             "rho138",  # 26 - 1.360-1.390 µm (1.375µm → 138, cirrus solar channel)
-            "bt067",   # 27 - 6.535-6.895 µm (6.715µm → 067)
-            "bt073",   # 28 - 7.175-7.475 µm (7.325µm → 073)
-            "bt086",   # 29 - 8.400-8.700 µm (8.550µm → 086)
-            "bt097",   # 30 - 9.580-9.880 µm (9.730µm → 097, ozone)
-            "bt110",   # 31 - 10.780-11.280 µm (11.030µm → 110)
-            "bt120",   # 32 - 11.770-12.270 µm (12.020µm → 120)
-            "bt133",   # 33 - 13.185-13.485 µm (13.335µm → 133)
-            "bt136",   # 34 - 13.485-13.785 µm (13.635µm → 136)
-            "bt139",   # 35 - 13.785-14.085 µm (13.935µm → 139)
-            "bt142",   # 36 - 14.085-14.385 µm (14.235µm → 142)
+            "bt067",  # 27 - 6.535-6.895 µm (6.715µm → 067)
+            "bt073",  # 28 - 7.175-7.475 µm (7.325µm → 073)
+            "bt086",  # 29 - 8.400-8.700 µm (8.550µm → 086)
+            "bt097",  # 30 - 9.580-9.880 µm (9.730µm → 097, ozone)
+            "bt110",  # 31 - 10.780-11.280 µm (11.030µm → 110)
+            "bt120",  # 32 - 11.770-12.270 µm (12.020µm → 120)
+            "bt133",  # 33 - 13.185-13.485 µm (13.335µm → 133)
+            "bt136",  # 34 - 13.485-13.785 µm (13.635µm → 136)
+            "bt139",  # 35 - 13.785-14.085 µm (13.935µm → 139)
+            "bt142",  # 36 - 14.085-14.385 µm (14.235µm → 142)
         ]
 
         modis_var_units = (
-            19 * ["-"] +   # bands 1-19: reflective
-            6  * ["K"]  +  # bands 20-25: thermal
-            ["-"]       +  # band  26: solar (cirrus)
-            9  * ["K"]     # bands 27-36: thermal
+            19 * ["-"]  # bands 1-19: reflective
+            + 6 * ["K"]  # bands 20-25: thermal
+            + ["-"]  # band  26: solar (cirrus)
+            + 9 * ["K"]  # bands 27-36: thermal
         )
 
         # Default channel list: key thermal/WV bands analogous to other instruments
         default_chan_list = (20, 22, 27, 28, 29, 31, 32, 33)
-        chan_list_instrument = synsat_kwargs.get("synsat_channel_list", default_chan_list)
+        chan_list_instrument = synsat_kwargs.get(
+            "synsat_channel_list", default_chan_list
+        )
 
         attr = self.synsat
         attr.instrument = f"MODIS ({satellite_name.capitalize()})"
@@ -577,12 +605,19 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
 
         # Solar channels: bands 1-19 are always solar; band 26 (index 25) is also solar
         solar_indices = set(range(1, 20)) | {26}
-        attr.solar_calculations = any(ch in solar_indices for ch in chan_list_instrument)
+        attr.solar_calculations = any(
+            ch in solar_indices for ch in chan_list_instrument
+        )
 
         # Coefficient files
         cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_eos_{eos_number}_modis.dat"
         self.FileSccld = cldaer_filename
-        print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
+        print(f"... [synsat] set cloud file to {cldaer_filename}")
+
+        if attr.use_aerosols:
+            aer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/scaercoef_eos_{eos_number}_modis_cams.dat"
+            self.FileScaer = aer_filename
+            print(f"... [synsat] set aerosol file to {aer_filename}")
 
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_eos_{eos_number}_modis_o3.dat"
         self.FileCoef = coef_filename
@@ -760,7 +795,10 @@ class SynSat(SynSatBase):
         """
 
         model = kwargs.get("model", "auto")
-        lon0 = self.synsat.subsatellite_lon
+
+        attr = self.synsat
+        lon0 = attr.subsatellite_lon
+        use_aerosols = attr.use_aerosols
 
         # use data handler to load data
         sdat = data_handler.DataHandler(model=model)
@@ -773,7 +811,7 @@ class SynSat(SynSatBase):
 
             self.synsat.input_filename = inputfile
 
-            sdat.open_data(inputfile, lon0 = lon0, **kwargs)
+            sdat.open_data(inputfile, lon0=lon0, use_aerosols=use_aerosols, **kwargs)
 
         elif type(inputfile_or_data) == type(xr.Dataset()):
             sdat.input_data = inputfile_or_data
@@ -802,7 +840,7 @@ class SynSat(SynSatBase):
         sdat = self.synsat.data_handler
         lon0 = self.synsat.subsatellite_lon
 
-        profs = sdat.data2profile(lon0 = lon0, **kwargs)
+        profs = sdat.data2profile(lon0=lon0, **kwargs)
 
         # forward profiles to RTTOV
         self.Profiles = profs
@@ -880,32 +918,33 @@ class SynSat(SynSatBase):
         selected_indices = sdat.selected_profiles_index
 
         # Create a full-size result array filled with NaN
-        full_result = np.full((original_stacked.sizes['profile'], len(attr.channels)), np.nan)
-        
+        full_result = np.full(
+            (original_stacked.sizes["profile"], len(attr.channels)), np.nan
+        )
+
         # Fill in the results at the correct positions
         full_result[selected_indices, :] = self.synsat.result
-        
+
         # Create the DataArray with full coordinates AND attributes preserved
         channels = xr.DataArray(data=np.array(attr.channels), dims=["channel"])
 
         btrefl_full = xr.DataArray(
-            data=full_result, 
-            coords={
-                'profile': original_stacked.profile,
-                'channel': channels
-            },
-            dims=['profile', 'channel'],
-            attrs=original_stacked.attrs  # Preserve dataset-level attributes if needed
+            data=full_result,
+            coords={"profile": original_stacked.profile, "channel": channels},
+            dims=["profile", "channel"],
+            attrs=original_stacked.attrs,  # Preserve dataset-level attributes if needed
         )
 
         # Copy coordinate attributes from original stacked data
         for coord_name in original_stacked.coords:
             if coord_name in btrefl_full.coords:
-                btrefl_full.coords[coord_name].attrs = original_stacked.coords[coord_name].attrs
+                btrefl_full.coords[coord_name].attrs = original_stacked.coords[
+                    coord_name
+                ].attrs
 
         # Now unstack will work correctly and preserve coordinate attributes
         btrefl = btrefl_full.unstack()
-        
+
         # Start with the original input data structure to preserve coordinate attributes
         synsat = xr.Dataset()
 
@@ -919,7 +958,7 @@ class SynSat(SynSatBase):
             a["units"] = attr.units[ichan]
             a["long_name"] = "Synsat %s Brightness Temperature at %.1f um" % (
                 attr.instrument,
-                np.float32(chan_name[2:]) / 10.0
+                np.float32(chan_name[2:]) / 10.0,
             )
             synsat[chan_name].attrs = a
 

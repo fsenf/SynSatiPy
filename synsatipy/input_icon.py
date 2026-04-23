@@ -8,6 +8,8 @@ import xarray as xr
 
 
 import synsatipy.utils.timetools as timetools
+import synsatipy.utils.aerosoltools as aerosoltools
+
 
 
 def icon_name_analyzer(icon_name):
@@ -337,6 +339,7 @@ def open_icon(
     """
 
     use_aerosols = kwargs.get("use_aerosols", False)
+    aerosol_config = kwargs.get("aerosol_config", {} )
 
     if geofile is not None:
         georef = read_georef(geofile)
@@ -505,11 +508,18 @@ def open_icon(
 
         icon_aerosol = icon_aerosol[aerosol_varlist]
 
-        print(icon_aerosol.time)
-        print(icon.time)
+        # aerosol number to mass conversion
+        icon_aerosol_mass = aerosoltools.convert_hamlite_numberconc_in_massconc(
+            icon_aerosol,
+            aerosol_config
+        )
+
+        aerosol_targetnames = aerosoltools.target_name_list( aerosol_config )
+        always_keep += aerosol_targetnames
+
+        icon = xr.merge([icon, icon_aerosol_mass], compat="override")
 
 
-        icon = xr.merge([icon, icon_aerosol], compat="override")
 
     if name_remapping:
         return icon_variable_mapping(icon, flavor=flavor, always_keep=always_keep)

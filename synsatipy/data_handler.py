@@ -13,7 +13,7 @@ import synsatipy.input_era as input_era
 import synsatipy.input_nextgems as input_nextgems
 
 from synsatipy.utils.spacetools import lonlat2azizen
-
+import synsatipy.utils.aerosoltools as aerosoltools
 
 ######################################################################
 ######################################################################
@@ -143,7 +143,8 @@ class DataHandler(object):
         isel = kwargs.pop("isel", None)
         lon0 = kwargs.pop("lon0", 0.0)
         use_aerosols = kwargs.pop("use_aerosols", False)
-            
+        aerosol_config = kwargs.get("aerosol_config", {})
+        
         if self.model == "auto":
             model = autodetect_model_by_filename(filename)
         else:
@@ -169,6 +170,9 @@ class DataHandler(object):
             self.input_data = indat.isel(**isel)
         else:
             self.input_data = indat
+
+        self.use_aerosols = use_aerosols
+        self.aerosol_config = aerosol_config
 
 
     def stack_data_as_profile(self, **kwargs):
@@ -254,8 +258,8 @@ class DataHandler(object):
         else:
             use_snow_factor = False
 
-        use_aerosols = kwargs.get("synsat_use_aerosols", False)
-        aerosol_species = kwargs.get("synsat_aerosol_species", {})
+        use_aerosols = self.use_aerosols
+        aerosol_config = self.aerosol_config
 
         lon0 = kwargs.pop("lon0", 0.0)
 
@@ -359,10 +363,30 @@ class DataHandler(object):
 
         cc = profs["cc"].data.T
 
-        gases = np.stack([q, cc, qc, q_frozen])
+        gases = [q, cc, qc, q_frozen]
+        gas_ids = [1, 20, 21, 30]  # H2O, Cloud fraction, Liquid water content, Frozen water content
+        
+        
+        if use_aerosols:
+            aerosol_mass_list = []
+            aerosol_id_list = []
+            
+            for aerosol_name in aerosol_config:
+                print(f"Processing aerosol species '{aerosol_name}'...")
+                target_name = aerosol_config[aerosol_name]["target_name"]
+                CAMS_OPAC_name = aerosol_config[aerosol_name]["CAMS_OPAC_name"]
+                rttov_id = aerosoltools._cams_rttov_id_mapping[ CAMS_OPAC_name ]
+
+                aerosol_mass = profs[target_name].data.T
+                aerosol_mass_list += [aerosol_mass,]
+                aerosol_id_list += [rttov_id,]
+
+                gases += [aerosol_mass]
+                gas_ids += [rttov_id]
+                
         myProfiles.MmrCldAer = 1
-        myProfiles.Gases = gases
-        myProfiles.GasId = np.array([1, 20, 21, 30])
+        myProfiles.Gases = np.stack(gases)
+        myProfiles.GasId = np.array(gas_ids)
 
         # this is Baum + McFarquhar
         myProfiles.IceCloud = np.hstack(

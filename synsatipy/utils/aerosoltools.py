@@ -33,6 +33,19 @@ _default_aerosol_config = {
 }
 
 
+_cams_rttov_id_mapping = {
+    "BCAR": 81,  # Black carbon
+    "DUS1": 82,  # Mineral dust – fine mode
+    "DUS2": 83,  # Mineral dust – medium mode
+    "DUS3": 84,  # Mineral dust – coarse mode
+    "SULP": 85,  # Sulphate
+    "SSA1": 86,  # Sea salt – fine mode
+    "SSA2": 87,  # Sea salt – medium mode
+    "SSA3": 88,  # Sea salt – coarse mode
+    "OMAT": 89,  # Organic matter
+}
+
+
 def get_aerosol_particle_mass(r_geometric, sigma, rho):
     """
     Compute the mass of a single aerosol particle from lognormal size distribution parameters.

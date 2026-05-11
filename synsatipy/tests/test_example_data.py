@@ -14,8 +14,11 @@ def test_examble_data():
 
     assert "ifces2" in iconname
 
+    hamlitename = synsat_example_data.get_example_data("hamlite01")
 
-@pytest.mark.parametrize("example_name", ["era01", "icon01", "icon02"])
+    assert "hamlite" in hamlitename
+
+@pytest.mark.parametrize("example_name", ["era01", "icon01", "icon02", "hamlite01"])
 def test_example_data_file_exists(example_name):
     """Check that the path returned by get_example_data points to an existing file."""
     fname = synsat_example_data.get_example_data(example_name)

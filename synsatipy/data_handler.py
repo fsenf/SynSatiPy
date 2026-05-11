@@ -84,7 +84,7 @@ def autodetect_model_by_filename(fname):
         if k in fname:
             model = "era"
 
-    icon_keys = ["icon", "ifces"]
+    icon_keys = ["icon", "ifces", "hamlite"]
 
     for k in icon_keys:
         if k in fname:

@@ -10,7 +10,6 @@ def test_modis_aerosol_init_defaults():
     - the instrument loads without error
     - AddAerosl RTTOV option is set
     - use_aerosols flag is stored on synsat attributes
-    - default aerosol_species dict is populated
     """
     s = SynSatTest(
         synsat_instrument="modis",
@@ -21,8 +20,6 @@ def test_modis_aerosol_init_defaults():
     assert s.synsat.instrument.startswith("MODIS")
     assert s.Options.AddAerosl is True
     assert s.synsat.use_aerosols is True
-    assert isinstance(s.synsat.aerosol_species, dict)
-    assert len(s.synsat.aerosol_species) > 0
 
 
 def test_modis_no_aerosol_init_defaults():

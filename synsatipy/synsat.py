@@ -110,18 +110,6 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         use_aerosols = synsat_kwargs.get("synsat_use_aerosols", False)
         self.Options.AddAerosl = use_aerosols
         self.synsat.use_aerosols = use_aerosols
-        # maps hamlite variable names -> RTTOV aerosol gas IDs
-        # see RTTOV user guide table of gas/aerosol IDs
-        self.synsat.aerosol_species = synsat_kwargs.get(
-            "synsat_aerosol_species",
-            {
-                "aer_so4": 41,  # sulphate
-                "aer_bc": 42,  # black carbon
-                "aer_oc": 43,  # organic carbon
-                "aer_du1": 47,  # mineral dust (coarse)
-                "aer_ss1": 51,  # sea salt (coarse)
-            },
-        )
 
         return
 

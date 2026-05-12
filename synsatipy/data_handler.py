@@ -121,6 +121,8 @@ class DataHandler(object):
     def __init__(self, model="auto", return_profile=True, **kwargs):
 
         self.model = model
+        self.use_aerosols = kwargs.pop("use_aerosols", False)
+        self.aerosol_config = kwargs.get("aerosol_config", {})
 
         return
 

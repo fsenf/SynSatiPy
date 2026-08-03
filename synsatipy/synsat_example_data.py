@@ -1,4 +1,4 @@
-import os, sys
+import socket
 
 
 def get_example_data(example_name, stored_on_server=True, return_geofile=False):
@@ -10,26 +10,32 @@ def get_example_data(example_name, stored_on_server=True, return_geofile=False):
     ----------
     example_name : str
         The name of the example data.
-        Possible values are "era01", "icon01", "icon02".
+        Possible values are "era01", "icon01", "icon02", "hamlite01".
 
     stored_on_server : bool, optional
         If the data is stored on the server. Default is True.
         Check the server name and set this parameter False if the server is unknown.
         Possible servers are "tropos", "dkrz".
 
+    return_geofile : bool, optional
+        If True, return the path to the geofile as well. Default is False.
+        
     Returns
     -------
     fname : str
-        The file name of the example data
+        The file name of the example data. If <return_geofile> is True, a tuple
+        (fname, geofile) is returned, where <geofile> is the path to the geofile.
 
     Notes
     -----
     The example data is stored on the server.
     """
-    
+
+    if return_geofile:
+        geofile = None
 
     if stored_on_server:
-        hostname = os.uname()[1]
+        hostname = socket.getfqdn()
 
         if "tropos.de" in hostname:
             server = "tropos"

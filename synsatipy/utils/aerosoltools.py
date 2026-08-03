@@ -6,28 +6,28 @@ _default_aerosol_config = {
         "radius": 8e-08,
         "density": 1993.0,
         "sigma": 1.59,
-        "CAMS_OPAC_name": '"SOOT"',
+        "CAMS_OPAC_name": "BCAR",
         "target_name": "qca",
     },
     "num_qsu": {
         "radius": 1.4e-07,
         "density": 1859.0,
         "sigma": 1.59,
-        "CAMS_OPAC_name": '"SULP"',
+        "CAMS_OPAC_name": "SULP",
         "target_name": "qsu",
     },
     "num_qss": {
         "radius": 8.5e-07,
         "density": 2165.0,
         "sigma": 2.0,
-        "CAMS_OPAC_name": '"SSA2"',
+        "CAMS_OPAC_name": "SSA2",
         "target_name": "qss",
     },
     "num_qdu": {
         "radius": 6e-07,
         "density": 2650.0,
         "sigma": 2.0,
-        "CAMS_OPAC_name": '"DUS2"',
+        "CAMS_OPAC_name": "DUS2",
         "target_name": "qdu",
     },
 }
@@ -128,8 +128,6 @@ def convert_hamlite_numberconc_in_massconc(hamlite, config):
             (dimensionless, > 1).
         density : float
             Material (bulk) density of the aerosol species [kg m⁻³].
-            Note: key is spelled ``'denisty'`` in the current implementation
-            (typo preserved for backwards compatibility).
         target_name : str
             Name of the output variable in the returned dataset.
 
@@ -156,9 +154,11 @@ def convert_hamlite_numberconc_in_massconc(hamlite, config):
     --------
     >>> config = {
     ...     "so4_a1": {
-    ...         "radius": 0.1e-6, "sigma": 1.5,
-    ...         "denisty": 1800.0, "target_name": "aer_so4"
-    ...     }
+    ...         "radius": 0.1e-6, 
+                "sigma": 1.5,
+    ...         "density": 1800.0, 
+                "target_name": "aer_so4",
+    ...         "OPAC_name": "SULP"}, 
     ... }
     >>> hamlite_mass = convert_hamlite_numberconc_in_massconc(hamlite, config)
     """

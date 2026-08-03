@@ -13,7 +13,7 @@ import synsatipy.input_era as input_era
 import synsatipy.input_nextgems as input_nextgems
 
 from synsatipy.utils.spacetools import lonlat2azizen
-
+import synsatipy.utils.aerosoltools as aerosoltools
 
 ######################################################################
 ######################################################################
@@ -84,7 +84,7 @@ def autodetect_model_by_filename(fname):
         if k in fname:
             model = "era"
 
-    icon_keys = ["icon", "ifces"]
+    icon_keys = ["icon", "ifces", "hamlite"]
 
     for k in icon_keys:
         if k in fname:
@@ -121,6 +121,8 @@ class DataHandler(object):
     def __init__(self, model="auto", return_profile=True, **kwargs):
 
         self.model = model
+        self.use_aerosols = kwargs.pop("use_aerosols", False)
+        self.aerosol_config = kwargs.get("aerosol_config", {})
 
         return
 
@@ -142,7 +144,9 @@ class DataHandler(object):
         """
         isel = kwargs.pop("isel", None)
         lon0 = kwargs.pop("lon0", 0.0)
-
+        use_aerosols = kwargs.pop("use_aerosols", False)
+        aerosol_config = kwargs.get("aerosol_config", {})
+        
         if self.model == "auto":
             model = autodetect_model_by_filename(filename)
         else:
@@ -156,8 +160,7 @@ class DataHandler(object):
 
         elif model == "icon":
             #            from input_icon import open_icon
-
-            indat = input_icon.open_icon(filename, **kwargs)
+            indat = input_icon.open_icon(filename, use_aerosols=use_aerosols, **kwargs)
 
         elif model == "nextgems":
             #            from input_icon import open_icon
@@ -169,6 +172,9 @@ class DataHandler(object):
             self.input_data = indat.isel(**isel)
         else:
             self.input_data = indat
+
+        self.use_aerosols = use_aerosols
+        self.aerosol_config = aerosol_config
 
 
     def stack_data_as_profile(self, **kwargs):
@@ -254,6 +260,9 @@ class DataHandler(object):
         else:
             use_snow_factor = False
 
+        use_aerosols = self.use_aerosols
+        aerosol_config = self.aerosol_config
+
         lon0 = kwargs.pop("lon0", 0.0)
 
         # get all stacked data
@@ -300,7 +309,12 @@ class DataHandler(object):
 
         # get satellite angles
         lon, lat = profs["lon"].data, profs["lat"].data
-        azi, zen = lonlat2azizen(lon, lat, lon0=lon0)
+        if lon0 is not None:
+            azi, zen = lonlat2azizen(lon, lat, lon0=lon0)
+        else:
+            # currently we treat all positions as nadir viewing, so set angles to zero
+            print("... [synsat]: no satellite longitude provided, treating all positions as nadir viewing.")
+            azi, zen = 0*lon, 0*lat
 
         # set max zen angle
         zen = np.clip(zen, 0, 80)
@@ -351,10 +365,30 @@ class DataHandler(object):
 
         cc = profs["cc"].data.T
 
-        gases = np.stack([q, cc, qc, q_frozen])
+        gases = [q, cc, qc, q_frozen]
+        gas_ids = [1, 20, 21, 30]  # H2O, Cloud fraction, Liquid water content, Frozen water content
+        
+        
+        if use_aerosols:
+            aerosol_mass_list = []
+            aerosol_id_list = []
+            
+            for aerosol_name in aerosol_config:
+                print(f"Processing aerosol species '{aerosol_name}'...")
+                target_name = aerosol_config[aerosol_name]["target_name"]
+                CAMS_OPAC_name = aerosol_config[aerosol_name]["CAMS_OPAC_name"]
+                rttov_id = aerosoltools._cams_rttov_id_mapping[ CAMS_OPAC_name ]
+
+                aerosol_mass = profs[target_name].data.T
+                aerosol_mass_list += [aerosol_mass,]
+                aerosol_id_list += [rttov_id,]
+
+                gases += [aerosol_mass]
+                gas_ids += [rttov_id]
+                
         myProfiles.MmrCldAer = 1
-        myProfiles.Gases = gases
-        myProfiles.GasId = np.array([1, 20, 21, 30])
+        myProfiles.Gases = np.stack(gases)
+        myProfiles.GasId = np.array(gas_ids)
 
         # this is Baum + McFarquhar
         myProfiles.IceCloud = np.hstack(

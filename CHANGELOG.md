@@ -2,8 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.2.0] 2026-08-03
 
+### Added
+
+#### Aerosol Support
+- New `aerosoltools` module for CAMS/OPAC aerosol species mapping and number-to-mass conversion
+- `use_aerosols` parameter for DataHandler and SynSat workflows with configurable species
+- HAMlite aerosol processing pipeline with automatic file detection and integration
+- Support for aerosol file handling in RTTOV via `FileScaer` coefficient files
+
+#### MODIS/EOS Instrument Support
+- New `load_eos_modis()` method supporting EOS-1 (Terra) and EOS-2 (Aqua) satellites
+- All 36 MODIS bands (0.4–14.4 μm) with default channel selection (thermal/water vapor bands 20, 22, 27–29, 31–33)
+- Polar-orbiting geometry handling with dynamic subsatellite longitude support
+- MODIS coefficient file integration for both Terra and Aqua variants
+
+#### Data Handler
+- HAMlite flavor detection and processing pipeline
+- Support for external geofile input via `geofile` parameter
+- New `hamlite01` example dataset
+
+### Changed
+
+#### Core Processing
+- Modified gas stacking in `data2profile()` to accommodate aerosols (list-based instead of `np.stack()`)
+- Enhanced GasId mapping to include aerosol RTTOV IDs (81–89 for CAMS species)
+- Added pressure level ordering detection (top-to-bottom vs bottom-to-top) for correct surface variable assignment
+- Improved subsatellite longitude handling with optional nadir-only viewing geometry support
+
+#### Instrument Configuration
+- Extended `load_instrument()` to support "modis" alongside "seviri", "abi", and "fci"
+- HAMlite file naming refactored with explicit `hamlite-aerosols` flavor variant
+
+#### Tests & Examples
+- Parametrized test cases for MODIS satellite variants
+- Centralized example data paths under `/work/bb1376/data/synsatipy/example-data/`
+- Updated test infrastructure to support geofile return options
+
+### Fixed
+
+- Proper handling of `lon0=None` for nadir-only viewing geometry (sets azimuth/zenith to zero)
+- Correct surface humidity extraction based on pressure level ordering
+- Code formatting and style consistency throughout
 
 ## [1.1.0] - 2025-11-14
 

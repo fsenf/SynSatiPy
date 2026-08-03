@@ -38,6 +38,7 @@ SynSatiPy is a Python interface to the RTTOV software that help to input model d
    examples/05-Compare-ICON-SEVIRI-Synsat-to-Meteosat-Obs.ipynb
    examples/06-Run-Synsat-on-ICON-Data-for-ABI.ipynb
    examples/07-Compare-ICON-ABI-Synsat-to-GOES-Obs.ipynb
+   examples/08-MODIS-on-ICON-HAMlite-with-and-without-Aerosol.ipynb
 
 
 .. toctree::

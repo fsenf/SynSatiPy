@@ -783,13 +783,14 @@ class SynSat(SynSatBase):
         """
 
         model = kwargs.get("model", "auto")
+        aerosol_config = kwargs.get('aerosol_config', {})
 
         attr = self.synsat
         lon0 = attr.subsatellite_lon
         use_aerosols = attr.use_aerosols
 
         # use data handler to load data
-        sdat = data_handler.DataHandler(model=model)
+        sdat = data_handler.DataHandler(model=model, use_aerosols=use_aerosols, aerosol_config=aerosol_config)
 
         # check if file or dataset is provided
         if type(inputfile_or_data) == type(""):

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] 2026-08-03
+## [1.2.0] 2026-08-04
 
 ### Added
 
@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 #### MODIS/EOS Instrument Support
 - New `load_eos_modis()` method supporting EOS-1 (Terra) and EOS-2 (Aqua) satellites
 - All 36 MODIS bands (0.4–14.4 μm) with default channel selection (thermal/water vapor bands 20, 22, 27–29, 31–33)
-- Polar-orbiting geometry handling with dynamic subsatellite longitude support
+- simplified polar-orbiting geometry handling with all pixels treated as nadir viewing
 - MODIS coefficient file integration for both Terra and Aqua variants
 
 #### Data Handler
@@ -23,13 +23,16 @@ All notable changes to this project will be documented in this file.
 - Support for external geofile input via `geofile` parameter
 - New `hamlite01` example dataset
 
+#### Examples
+- New aerosol-focused example notebooks using ICON-HAMlite data for MODIS, GOES-ABI and Meteosat imagers
+
 ### Changed
 
 #### Core Processing
 - Modified gas stacking in `data2profile()` to accommodate aerosols (list-based instead of `np.stack()`)
 - Enhanced GasId mapping to include aerosol RTTOV IDs (81–89 for CAMS species)
 - Added pressure level ordering detection (top-to-bottom vs bottom-to-top) for correct surface variable assignment
-- Improved subsatellite longitude handling with optional nadir-only viewing geometry support
+- Enhanced aerosol capabilities for GOES-ABI and other instruments
 
 #### Instrument Configuration
 - Extended `load_instrument()` to support "modis" alongside "seviri", "abi", and "fci"

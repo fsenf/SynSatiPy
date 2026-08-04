@@ -258,6 +258,12 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         self.FileSccld = cldaer_filename
         print(f"... [synsat] set cloud / aerosol file to  {cldaer_filename}")
 
+        # Add aerosol file if enabled
+        if attr.use_aerosols:
+            aer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/scaercoef_msg_{synsat_msg_number}_seviri_cams.dat"
+            self.FileScaer = aer_filename
+            print(f"... [synsat] set aerosol file to {aer_filename}")
+
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_msg_{synsat_msg_number}_seviri_o3.dat"
         self.FileCoef = coef_filename
         print(f"... [synsat] load coefficient file {coef_filename}")
@@ -366,6 +372,11 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         self.FileSccld = cldaer_filename
         print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
 
+        if attr.use_aerosols:
+            aer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/scaercoef_goes_{synsat_goes_number}_abi_cams.dat"
+            self.FileScaer = aer_filename
+            print(f"... [synsat] set aerosol file to {aer_filename}")
+
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_goes_{synsat_goes_number}_abi_o3.dat"
         self.FileCoef = coef_filename
         print(f"... [synsat] load coefficient file {coef_filename}")
@@ -472,6 +483,12 @@ class SynSatBase(pyrttov.Rttov, synsat_attributes):
         cldaer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/sccldcoef_mtg_{synsat_mtg_number}_fci.dat"
         self.FileSccld = cldaer_filename
         print(f"... [synsat] set cloud / aerosol file to {cldaer_filename}")
+
+        # Add aerosol file if enabled
+        if attr.use_aerosols:
+            aer_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/cldaer_visir/scaercoef_mtg_{synsat_mtg_number}_fci_cams.dat"
+            self.FileScaer = aer_filename
+            print(f"... [synsat] set aerosol file to {aer_filename}")
 
         coef_filename = f"{attr.rttov_install_dir}/rtcoef_rttov13/rttov13pred54L/rtcoef_mtg_{synsat_mtg_number}_fci_o3.dat"
         self.FileCoef = coef_filename
